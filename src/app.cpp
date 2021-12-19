@@ -5,9 +5,8 @@
 namespace hyd
 {
 
-App::App(/* args */)
-{
-}
+App::App():m_window{800, 600, "Hydra"}
+{}
 
 App::~App()
 {
@@ -15,7 +14,11 @@ App::~App()
 
 void App::run()
 {
-    std::cout << "Hello world! \n";
+    while (!m_window.shouldClose())
+    {
+        glfwPollEvents();
+
+    }
 }
 
 } // namespace hyd
