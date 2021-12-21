@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Events/Event.hpp"
 
 // libs
 #include <GLFW/glfw3.h>
@@ -31,6 +32,8 @@ public:
         }
     }
 
+    void SetEventCallback(const std::function<void(Event&)>& callback){  m_data.eventCallback = callback; };
+
 
 private:
     static void errorCallback(int error, const char* description);
@@ -43,6 +46,7 @@ private:
         std::string title;
         unsigned int width, height;
 
+        std::function<void(Event&)> eventCallback;
     };
     WindowData m_data;
 
