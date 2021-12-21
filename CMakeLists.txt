@@ -42,16 +42,16 @@ target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
 # find_package(Vulkan REQUIRED)
 # target_link_libraries(${CMAKE_PROJECT_NAME} Vulkan::Vulkan)
 
-# #########################################################
-# #GLFW
-# set(GLFW_PATH "${PROJECT_SOURCE_DIR}/vendor/glfw-3.3.5")
-# set(GLFW_INCLUDE_DIRS "${GLFW_PATH}/include")
-# set(GLFW_LIB "${GLFW_PATH}/lib-mingw-w64")
+#########################################################
+#GLFW
+set(GLFW_PATH "${PROJECT_SOURCE_DIR}/vendor/glfw-3.3.5")
+set(GLFW_INCLUDE_DIRS "${GLFW_PATH}/include")
+set(GLFW_LIB "${GLFW_PATH}/lib-mingw-w64")
 
 
-# add_subdirectory(${GLFW_PATH})
-# include_directories(${GLFW_PATH}/include)
-# target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
+add_subdirectory(${GLFW_PATH})
+include_directories(${GLFW_INCLUDE_DIRS})
+target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 
 # ###########################################################
 # # GLM

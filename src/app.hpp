@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/hyd_window.hpp" 
+
 namespace hyd
 {
     
@@ -13,7 +15,7 @@ public:
 
 private:
     /* data */
-
+    HydWindow m_window;
 };
 
 
