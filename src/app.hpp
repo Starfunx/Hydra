@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Core/hyd_window.hpp" 
+#include "Core/Window.hpp" 
+#include "Events/Event.hpp"
+#include "Events/ApplicationEvent.hpp"
 
 namespace hyd
 {
@@ -13,10 +15,20 @@ public:
     
     void run();
 
-private:
-    /* data */
-    HydWindow m_window;
-};
+    void onEvent(Event& e);
 
+    static App& Get() { return *s_Instance; }
+    Window& GetWindow() { return m_window; }
+
+private:
+    bool OnWindowClose(WindowCloseEvent& e);
+    bool OnWindowResize(WindowResizeEvent& e);
+    /* data */
+    Window m_window;
+
+    bool m_shouldEnd{false};
+
+    static App* s_Instance;
+};
 
 } // namespace hyd
