@@ -1,23 +1,30 @@
-#include "hyd_window.hpp"
+#include "Window.hpp"
 
+
+// std
 #include <stdexcept>
+#include <iostream>
+#include <cassert>
 
 namespace hyd
 {
 
-HydWindow::HydWindow(int w, int h, std::string windowName):
-m_width{w}, m_height{h}, m_windowName{windowName}
-{
+Window::Window(int w, int h, std::string windowName)
+{   
+    m_data.width = w;
+    m_data.height = h;
+    m_data.title = windowName;
+
     initWindow();
 }
 
-HydWindow::~HydWindow()
+Window::~Window()
 {
     glfwDestroyWindow(m_window);
     glfwTerminate();
 }
 
-void HydWindow::initWindow(){
+void Window::initWindow(){
 
     glfwSetErrorCallback(errorCallback);
     if (!glfwInit())
@@ -26,14 +33,14 @@ void HydWindow::initWindow(){
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    m_window = glfwCreateWindow(m_width, m_height, m_windowName.c_str(), 
+    m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), 
         nullptr, nullptr);
 
-    glfwSetWindowUserPointer(m_window, this);
-    // glfwSetFramebufferSizeCallback(m_window, );
+    glfwSetWindowUserPointer(m_window, &m_data);
+    
 }
 
-void HydWindow::errorCallback(int error, const char* description){
+void Window::errorCallback(int error, const char* description){
     std::string strerror = "glfwError" + error;
     strerror += description;
     throw std::runtime_error(strerror);

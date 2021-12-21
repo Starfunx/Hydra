@@ -16,7 +16,8 @@ set(SOURCES
     ${SRC_DIR}/main.cpp
     ${SRC_DIR}/app.cpp
 
-    ${SRC_DIR}/core/hyd_window.cpp
+    ${SRC_DIR}/core/Window.cpp
+    ${SRC_DIR}/core/Input.cpp
 
   )
 

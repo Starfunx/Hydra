@@ -1,22 +1,24 @@
 #pragma once
 
+
 // libs
 #include <GLFW/glfw3.h>
 
 // std
 #include <string>
+#include <functional> // std::function
 
 namespace hyd
 {
 
-class HydWindow
+class Window
 {
 public:
-    HydWindow(int w, int h, std::string windowName);
-    ~HydWindow();
+    Window(int w, int h, std::string windowName);
+    ~Window();
 
-    HydWindow(const HydWindow &) = delete;
-    HydWindow &operator=(const HydWindow &) = delete;
+    Window(const Window &) = delete;
+    Window &operator=(const Window &) = delete;
 
     bool shouldClose() { return glfwWindowShouldClose(m_window); }
     
@@ -35,9 +37,15 @@ private:
     void initWindow();
     /* data */
     GLFWwindow* m_window;
-    std::string m_windowName;
-    int m_width;
-    int m_height;
+
+    struct WindowData
+    {
+        std::string title;
+        unsigned int width, height;
+
+    };
+    WindowData m_data;
+
 };
 
 } // namespace hyd
