@@ -7,9 +7,19 @@
 namespace hyd
 {
     
-Pipeline::Pipeline(const std::string& vertFilepath, const std::string& fragFilepath)
+Pipeline::Pipeline(
+    Device& device,
+    const std::string& vertFilepath,
+    const std::string& fragFilepath,
+    const PipelineConfigInfo& configInfo)
+    : m_device{device}
 {
-    createGraphicspipeline(vertFilepath, fragFilepath);
+    createGraphicspipeline(vertFilepath, fragFilepath, configInfo);
+}
+
+Pipeline::~Pipeline(){
+    vkDestroyShaderModule(m_device.device(), m_vertShaderModule, nullptr);
+    vkDestroyShaderModule(m_device.device(), m_fragShadermodule, nullptr);
 }
 
 
@@ -30,8 +40,10 @@ std::vector<char> Pipeline::readFile(const std::string& filepath){
 
 }
 
-void Pipeline::createGraphicspipeline(const std::string& vertFilepath, 
-    const std::string& fragFilepath)
+void Pipeline::createGraphicspipeline(
+    const std::string& vertFilepath, 
+    const std::string& fragFilepath,
+    const PipelineConfigInfo& configInfo)
 {
 
     auto vertCode = readFile(vertFilepath);
@@ -40,6 +52,29 @@ void Pipeline::createGraphicspipeline(const std::string& vertFilepath,
     std::cout << "Vertex Shader Length: " << vertCode.size() << '\n';
     std::cout << "Fragment Shader Length: " << fragCode.size() << '\n';
 
+    createShaderModule(vertCode, &m_vertShaderModule);
+    createShaderModule(fragCode, &m_fragShadermodule);
+
 }
+
+
+void Pipeline::createShaderModule(
+    const std::vector<char>& code,
+    VkShaderModule* shaderModule){
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+    if (vkCreateShaderModule(m_device.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS){
+        throw std::runtime_error("failed to create shader module");
+    }
+}
+
+PipelineConfigInfo Pipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height){
+    PipelineConfigInfo configInfo{};
+    return configInfo;
+}
+
 
 } // namespace se

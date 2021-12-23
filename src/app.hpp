@@ -4,6 +4,7 @@
 #include "Events/Event.hpp"
 #include "Events/ApplicationEvent.hpp"
 
+#include "Renderer/Device.hpp"
 #include "Renderer/Pipeline.hpp"
 
 namespace hyd
@@ -15,6 +16,10 @@ public:
     App(/* args */);
     ~App();
     
+    static constexpr int WIDTH = 800;
+    static constexpr int HEIGHT = 600;
+
+
     void run();
 
     void onEvent(Event& e);
@@ -31,7 +36,12 @@ private:
     bool m_shouldEnd{false};
     static App* s_Instance;
 
-    Pipeline m_pipeline{ "../shaders/simple_shader.vert.spv", "../shaders/simple_shader.frag.spv"};
+    Device m_device{m_window};
+    Pipeline m_pipeline{
+        m_device,
+        "../shaders/simple_shader.vert.spv",
+        "../shaders/simple_shader.frag.spv", 
+        Pipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
 
 };
 
