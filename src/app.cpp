@@ -31,7 +31,7 @@ void App::run()
         if (Input::IsKeyPressed(key::Space))
         {
             /* code */
-            std::cout << "Space" << std::endl;
+            // std::cout << "Space" << std::endl;
         }
         
 
@@ -40,7 +40,7 @@ void App::run()
 
 void App::onEvent(Event& e){
 
-    std::cout << e << std::endl;
+    // std::cout << e << std::endl;
 
 
     EventDispatcher dispatcher(e);

@@ -20,6 +20,8 @@ set(SOURCES
     ${SRC_DIR}/core/Input.cpp
 
     ${SRC_DIR}/Renderer/Device.cpp
+    ${SRC_DIR}/Renderer/Pipeline.cpp
+
   )
 
 
