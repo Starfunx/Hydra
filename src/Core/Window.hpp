@@ -3,6 +3,7 @@
 #include "Events/Event.hpp"
 
 // libs
+#include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 // std
@@ -31,6 +32,9 @@ public:
             glfwWaitEvents();
         }
     }
+
+    void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+
 
     void SetEventCallback(const std::function<void(Event&)>& callback){  m_data.eventCallback = callback; };
 

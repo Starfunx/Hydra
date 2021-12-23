@@ -19,6 +19,7 @@ set(SOURCES
     ${SRC_DIR}/core/Window.cpp
     ${SRC_DIR}/core/Input.cpp
 
+    ${SRC_DIR}/Renderer/Device.cpp
   )
 
 
@@ -35,13 +36,13 @@ target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 # #########################################################
-# #VULKAN SDK
-# # set(VULKAN_SDK_PATH "C:/VulkanSDK/1.2.170.0")
-# # set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-# # set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+#VULKAN SDK
+# set(VULKAN_SDK_PATH "C:/VulkanSDK/1.2.170.0")
+# set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
+# set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
 
-# find_package(Vulkan REQUIRED)
-# target_link_libraries(${CMAKE_PROJECT_NAME} Vulkan::Vulkan)
+find_package(Vulkan REQUIRED)
+target_link_libraries(${CMAKE_PROJECT_NAME} Vulkan::Vulkan)
 
 #########################################################
 #GLFW
