@@ -1,3 +1,13 @@
+/*
+Device class
+The device class is responsible for initializing vulkan:
+the Vulkan instance creattion
+setting up validation layers
+the creation of a physical device and queues families
+the creation of a logical device and logical queues
+the creation of a window surface
+*/
+
 #pragma once
 
 #include "Core/Window.hpp"

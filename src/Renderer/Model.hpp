@@ -1,8 +1,8 @@
-#pragma once
 /*
 This class takes vertex data in file (on cpu) and allocate the memory
 and copy the data on the device's GPU so it can be rendered effeciently
 */
+#pragma once
 
 #include "Device.hpp"
 

@@ -1,3 +1,7 @@
+/*
+The swapchain class handles the swapchain and the framebuffers
+*/
+
 #pragma once
 
 #include "Device.hpp"

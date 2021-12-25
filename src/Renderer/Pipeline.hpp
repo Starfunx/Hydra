@@ -1,3 +1,6 @@
+/*
+The Pipeline class help us build a 3d pipeline 
+*/
 #pragma once
 
 #include "Device.hpp"
