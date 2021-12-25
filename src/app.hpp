@@ -42,6 +42,9 @@ private:
     void createPipeline();
     void createCommandBuffers();
     void drawFrame();
+    void recreateSwapChain();
+    void recordCommandBuffer(int imageeIndex);
+    void freeCommandBuffers();
 
     /* data */
     Window m_window;
@@ -50,11 +53,13 @@ private:
     static App* s_Instance;
 
     Device m_device{m_window};
-    SwapChain m_swapChain{m_device, m_window.getExtent()};
+    std::unique_ptr<SwapChain> m_swapChain;
     std::unique_ptr<Pipeline> m_pipeline;
     VkPipelineLayout m_pipelineLayout;
     std::vector<VkCommandBuffer> m_commandBuffers;
     std::unique_ptr<Model> m_model;
+
+    bool m_windowResized{false};
 };
 
 } // namespace hyd
