@@ -39,7 +39,7 @@ target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
     # -Werror             # treat warnings as errors
 )
 
-# #########################################################
+##########################################################
 #VULKAN SDK
 # set(VULKAN_SDK_PATH "C:/VulkanSDK/1.2.170.0")
 # set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
@@ -50,17 +50,17 @@ target_link_libraries(${CMAKE_PROJECT_NAME} Vulkan::Vulkan)
 
 #########################################################
 #GLFW
+
 set(GLFW_PATH "${PROJECT_SOURCE_DIR}/vendor/glfw-3.3.5")
 set(GLFW_INCLUDE_DIRS "${GLFW_PATH}/include")
 set(GLFW_LIB "${GLFW_PATH}/lib-mingw-w64")
-
 
 add_subdirectory(${GLFW_PATH})
 include_directories(${GLFW_INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 
-# ###########################################################
-# # GLM
+###########################################################
+# GLM
 
 add_subdirectory(${VENDOR_DIR}/glm)
 target_link_libraries(${CMAKE_PROJECT_NAME} glm)
@@ -70,7 +70,15 @@ target_link_libraries(${CMAKE_PROJECT_NAME} glm)
 
 # include_directories(${VENDOR_DIR}/tinyobj)
 
-# ############################################################
+#############################################################
+# Entt
+
+target_include_directories(${CMAKE_PROJECT_NAME}
+    PUBLIC 
+        ${VENDOR_DIR}/entt/src/
+)
+
+#############################################################
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     # ${PROJECT_BINARY_DIR} # for cmaked configured headers

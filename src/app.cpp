@@ -2,10 +2,15 @@
 
 #include "Core/Input.hpp"
 
+#include "Components/Color.hpp"
+#include "Components/Mesh.hpp"
+#include "Components/Transform.hpp"
+
 //libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp> // two_pi
 
 // std
 #include <iostream>
@@ -17,6 +22,7 @@ namespace hyd
 
 
 struct SimplePushConstantData {
+    glm::mat2 transform{1.f};
     glm::vec2 offset;
     alignas(16) glm::vec3 color;
 };
@@ -32,7 +38,7 @@ App::App():
  
     m_window.SetEventCallback(HY_BIND_EVENT_FN(App::onEvent));
 
-    loadModels();
+    loadEntities();
     createPipelineLayout();
     recreateSwapChain();
     createCommandBuffers();
@@ -82,14 +88,34 @@ bool App::OnWindowResize(WindowResizeEvent& e){
 
 
 
-void App::loadModels(){
+void App::loadEntities(){
     std::vector<Model::Vertex> vertices {
         {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
         {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
-    m_model = std::make_unique<Model> (m_device, vertices);
+    auto model = std::make_shared<Model> (m_device, vertices);
+    // auto triangle = SeGameObject::crerateGameObject();
+    // triangle.m_model = m_seModel;
+    // triangle.m_color = {.1f, .8f, .1f};
+    // triangle.m_transform2d.translation.x = .5f;
+    // triangle.m_transform2d.scale = {.5f, 2.0f};
+    // triangle.m_transform2d.rotation = 0.25f * glm::two_pi<float>();
+
+    // m_gameObjects.push_back(std::move(triangle));
+
+    const auto entity = m_registry.create();
+    m_registry.emplace<MeshComponent>(entity, model);
+    m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 0.f, 0.f));
+    m_registry.emplace<Transform2dComponent>(entity, 
+        glm::vec2(0.f, 0.f),
+        glm::vec2(1.f, 1.f),
+        0.f);
+    // m_registry.emplace<position>(entity, i * 1.f, i * 1.f);
+    // if(i % 2 == 0) { m_registry.emplace<velocity>(entity, i * .1f, i * .1f); }
+
+
 }
 
 
@@ -196,9 +222,6 @@ void App::drawFrame(){
 }
 
 void App::recordCommandBuffer(int imageIndex){
-    static int frame{0};
-    frame = (frame + 1) % 1000;
-
     VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -233,25 +256,7 @@ void App::recordCommandBuffer(int imageIndex){
         vkCmdSetViewport(m_commandBuffers[imageIndex], 0, 1, &viewport);
         vkCmdSetScissor(m_commandBuffers[imageIndex], 0, 1, &scissor);
 
-        m_pipeline->bind(m_commandBuffers[imageIndex]);
-        m_model->bind(m_commandBuffers[imageIndex]);
-
-        for (size_t j = 0; j < 4; j++)
-        {
-            SimplePushConstantData push{};
-            push.offset = {-0.5f + frame*0.002f, -0.4 + j*0.25};
-            push.color = {0.0f, 0.0f, 0.2f + 0.2f*j};
-
-            vkCmdPushConstants(
-                m_commandBuffers[imageIndex],
-                m_pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(SimplePushConstantData),
-                &push);
-            m_model->draw(m_commandBuffers[imageIndex]);
-        }
-        
+        renderEntities(m_commandBuffers[imageIndex]);
 
         vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
 
@@ -269,5 +274,57 @@ void App::freeCommandBuffers(){
     m_commandBuffers.clear();
 }
 
+
+void App::renderEntities(VkCommandBuffer commandBuffer){
+    auto view = m_registry.view<Transform2dComponent, MeshComponent, ColorComponent>();
+    
+    m_pipeline->bind(commandBuffer);
+
+
+    for(auto entity: view) {
+        auto &transform = view.get<Transform2dComponent>(entity);
+        auto &mesh = view.get<MeshComponent>(entity);
+        auto &color = view.get<ColorComponent>(entity);
+
+        transform.rotation = glm::mod(transform.rotation + 0.001f, glm::two_pi<float>());
+
+        SimplePushConstantData push{};
+        push.transform = transform.mat2();
+        push.offset = transform.translation;
+        push.color = color.m_color;
+
+        vkCmdPushConstants(
+            commandBuffer,
+            m_pipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(SimplePushConstantData),
+            &push);
+
+        mesh.model->bind(commandBuffer);
+        mesh.model->draw(commandBuffer);
+    }
+
+
+    // for (auto& obj:m_gameObjects){
+    //     obj.m_transform2d.rotation = glm::mod(obj.m_transform2d.rotation + 0.001f, glm::two_pi<float>());
+
+    //     SimplePushConstantData push{};
+    //     push.transform = obj.m_transform2d.mat2();
+    //     push.offset = obj.m_transform2d.translation;
+    //     push.color = obj.m_color;
+
+    //     vkCmdPushConstants(
+    //         commandBuffer,
+    //         m_pipelineLayout,
+    //         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+    //         0,
+    //         sizeof(SimplePushConstantData),
+    //         &push);
+
+    //     obj.m_model->bind(commandBuffer);
+    //     obj.m_model->draw(commandBuffer);
+    // }
+}
 
 } // namespace hyd

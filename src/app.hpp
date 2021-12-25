@@ -9,6 +9,9 @@
 #include "Renderer/SwapChain.hpp"
 #include "Renderer/Model.hpp"
 
+//libs
+#include <entt/entt.hpp>
+
 // std
 #include <memory>
 #include <vector>
@@ -37,7 +40,7 @@ private:
     bool OnWindowClose(WindowCloseEvent& e);
     bool OnWindowResize(WindowResizeEvent& e);
 
-    void loadModels();
+    void loadEntities();
     void createPipelineLayout();
     void createPipeline();
     void createCommandBuffers();
@@ -45,6 +48,7 @@ private:
     void recreateSwapChain();
     void recordCommandBuffer(int imageeIndex);
     void freeCommandBuffers();
+    void renderEntities(VkCommandBuffer commandBuffer);
 
     /* data */
     Window m_window;
@@ -60,6 +64,8 @@ private:
     std::unique_ptr<Model> m_model;
 
     bool m_windowResized{false};
+
+    entt::registry m_registry;
 };
 
 } // namespace hyd
