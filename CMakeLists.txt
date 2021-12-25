@@ -21,6 +21,7 @@ set(SOURCES
 
     ${SRC_DIR}/Renderer/Device.cpp
     ${SRC_DIR}/Renderer/Pipeline.cpp
+    ${SRC_DIR}/Renderer/SwapChain.cpp
 
   )
 

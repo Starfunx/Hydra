@@ -6,6 +6,11 @@
 
 #include "Renderer/Device.hpp"
 #include "Renderer/Pipeline.hpp"
+#include "Renderer/SwapChain.hpp"
+
+// std
+#include <memory>
+#include <vector>
 
 namespace hyd
 {
@@ -30,6 +35,13 @@ public:
 private:
     bool OnWindowClose(WindowCloseEvent& e);
     bool OnWindowResize(WindowResizeEvent& e);
+
+
+    void createPipelineLayout();
+    void createPipeline();
+    void createCommandBuffers();
+    void drawFrame();
+
     /* data */
     Window m_window;
 
@@ -37,12 +49,10 @@ private:
     static App* s_Instance;
 
     Device m_device{m_window};
-    Pipeline m_pipeline{
-        m_device,
-        "../shaders/simple_shader.vert.spv",
-        "../shaders/simple_shader.frag.spv", 
-        Pipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
-
+    SwapChain m_swapChain{m_device, m_window.getExtent()};
+    std::unique_ptr<Pipeline> m_pipeline;
+    VkPipelineLayout m_pipelineLayout;
+    std::vector<VkCommandBuffer> m_commandBuffers;
 };
 
 } // namespace hyd
