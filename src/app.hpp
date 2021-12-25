@@ -7,6 +7,7 @@
 #include "Renderer/Device.hpp"
 #include "Renderer/Pipeline.hpp"
 #include "Renderer/SwapChain.hpp"
+#include "Renderer/Model.hpp"
 
 // std
 #include <memory>
@@ -36,7 +37,7 @@ private:
     bool OnWindowClose(WindowCloseEvent& e);
     bool OnWindowResize(WindowResizeEvent& e);
 
-
+    void loadModels();
     void createPipelineLayout();
     void createPipeline();
     void createCommandBuffers();
@@ -53,6 +54,7 @@ private:
     std::unique_ptr<Pipeline> m_pipeline;
     VkPipelineLayout m_pipelineLayout;
     std::vector<VkCommandBuffer> m_commandBuffers;
+    std::unique_ptr<Model> m_model;
 };
 
 } // namespace hyd

@@ -22,6 +22,7 @@ set(SOURCES
     ${SRC_DIR}/Renderer/Device.cpp
     ${SRC_DIR}/Renderer/Pipeline.cpp
     ${SRC_DIR}/Renderer/SwapChain.cpp
+    ${SRC_DIR}/Renderer/Model.cpp
 
   )
 
@@ -61,8 +62,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 # ###########################################################
 # # GLM
 
-# add_subdirectory(${VENDOR_DIR}/glm)
-# target_link_libraries(${CMAKE_PROJECT_NAME} glm)
+add_subdirectory(${VENDOR_DIR}/glm)
+target_link_libraries(${CMAKE_PROJECT_NAME} glm)
 
 # ###########################################################
 # # TinyObj

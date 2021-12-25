@@ -19,7 +19,7 @@ App::App():
  
     m_window.SetEventCallback(HY_BIND_EVENT_FN(App::onEvent));
 
-
+    loadModels();
     createPipelineLayout();
     createPipeline();
     createCommandBuffers();
@@ -69,6 +69,16 @@ return true;
 
 
 
+void App::loadModels(){
+    std::vector<Model::Vertex> vertices {
+        {{0.0f, -0.5f}},
+        {{0.5f, 0.5f}},
+        {{-0.5f, 0.5f}}
+    };
+
+    m_model = std::make_unique<Model> (m_device, vertices);
+}
+
 
 void App::createPipelineLayout(){
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -110,7 +120,7 @@ void App::createCommandBuffers(){
         throw std::runtime_error("failed to allocate command buffers!");
     }
 
-    for (int i = 0; i < m_commandBuffers.size(); ++i){
+    for (int i = 0; i < m_commandBuffers.size(); i++){
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -135,7 +145,8 @@ void App::createCommandBuffers(){
         vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     
         m_pipeline->bind(m_commandBuffers[i]);
-        vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);// 3 vertices 1 instance
+        m_model->bind(m_commandBuffers[i]);
+        m_model->draw(m_commandBuffers[i]);
 
         vkCmdEndRenderPass(m_commandBuffers[i]);
 
