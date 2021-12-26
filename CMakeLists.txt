@@ -69,10 +69,10 @@ target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 add_subdirectory(${VENDOR_DIR}/glm)
 target_link_libraries(${CMAKE_PROJECT_NAME} glm)
 
-# ###########################################################
-# # TinyObj
+###########################################################
+# TinyObj
 
-# include_directories(${VENDOR_DIR}/tinyobj)
+include_directories(${VENDOR_DIR}/tinyobj)
 
 #############################################################
 # Entt

@@ -12,6 +12,7 @@ and copy the data on the device's GPU so it can be rendered effeciently
 #include <glm/glm.hpp>
 
 // std
+#include <memory>
 #include <vector>
 
 namespace hyd {
@@ -24,9 +25,15 @@ public:
         /* data */
         glm::vec3 position;
         glm::vec3 color;
+        glm::vec3 normal{};
+        glm::vec2 uv{};
 
         static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
         static std::vector<VkVertexInputAttributeDescription> getAttributesDescriptions();
+
+        bool operator==(const Vertex& other) const {
+            return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
+        }
 
     };
     
@@ -34,6 +41,8 @@ public:
     {
         std::vector<Vertex> vertices{};
         std::vector<uint32_t> indices{};
+        
+        void loadModel(const std::string& filepath);
     };
     
     
@@ -43,6 +52,8 @@ public:
     Model(const Model&) = delete;
     Model &operator=(const Model&) = delete;
 
+    static std::unique_ptr<Model> createModelFromFile(Device& device, const std::string& filepath);
+
     void bind(VkCommandBuffer VkCommandBuffer);
     void draw(VkCommandBuffer VkCommandBuffer);
 
@@ -50,7 +61,7 @@ public:
 private:
     void createVertexBuffers(const std::vector<Vertex> &vertices);
     void createIndexBuffers(const std::vector<uint32_t> &indices);
-    
+
     /* data */
     Device& m_device;
 
