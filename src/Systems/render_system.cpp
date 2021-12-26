@@ -68,9 +68,14 @@ void RenderSystem::createPipeline(VkRenderPass renderPass){
 }
 
 
-void RenderSystem::renderEntities(VkCommandBuffer commandBuffer, entt::registry& registry){
+void RenderSystem::renderEntities(
+    VkCommandBuffer commandBuffer,
+     entt::registry& registry,
+     const Camera& camera ){
     auto view = registry.view<TransformComponent, MeshComponent, ColorComponent>();
-    
+
+    auto projectionView = camera.getProjection()*camera.getView();
+
     m_pipeline->bind(commandBuffer);
 
     for(auto entity: view) {
@@ -83,7 +88,7 @@ void RenderSystem::renderEntities(VkCommandBuffer commandBuffer, entt::registry&
         transform.rotation.x = glm::mod(transform.rotation.y + 0.00025f, glm::two_pi<float>());
 
         SimplePushConstantData push{};
-        push.transform = transform.mat4();
+        push.transform = projectionView*transform.mat4();
         push.color = color.m_color;
 
         vkCmdPushConstants(

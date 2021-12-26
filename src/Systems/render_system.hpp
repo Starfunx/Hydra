@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Renderer/Pipeline.hpp"
+#include "Renderer/Camera.hpp"
 
 //libs
 #include <entt/entt.hpp>
@@ -21,8 +22,10 @@ public:
     RenderSystem(const RenderSystem&) = delete;
     RenderSystem &operator=(const RenderSystem&) = delete;
 
-    void renderEntities(VkCommandBuffer commandBuffer, entt::registry& registry);
-
+    void renderEntities(
+        VkCommandBuffer commandBuffer,
+        entt::registry& registry,
+        const Camera& camera);
 private:
     void createPipelineLayout();
     void createPipeline(VkRenderPass renderPass);

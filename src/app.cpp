@@ -38,6 +38,8 @@ App::~App(){}
 
 void App::run(){
     RenderSystem renderSystem{m_device, m_renderer.getSwapChainRenderPass()};
+    Camera camera{};
+    camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
 
     while (!m_shouldEnd)
     {
@@ -48,6 +50,10 @@ void App::run(){
             // std::cout << "Space" << std::endl;
         }
 
+        float aspect = m_renderer.getAspectRatio();
+        // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
+        camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+
         if (auto commandBuffer = m_renderer.beginFrame()){
      
             // beigin offscreen shadow pass
@@ -55,7 +61,7 @@ void App::run(){
             // end offscreen shadow pass
      
             m_renderer.beginSwapChainRenderPass(commandBuffer);
-            renderSystem.renderEntities(commandBuffer, m_registry);
+            renderSystem.renderEntities(commandBuffer, m_registry, camera);
             m_renderer.endSwapChainRenderPass(commandBuffer);
             
             m_renderer.endFrame();
@@ -156,7 +162,7 @@ void App::loadEntities(){
     m_registry.emplace<MeshComponent>(entity, model);
     m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 0.f, 0.f));
     m_registry.emplace<TransformComponent>(entity, 
-        glm::vec3{0.f, 0.f, 0.5f},
+        glm::vec3{0.f, 0.f, 1.5f},
         glm::vec3{0.5f, 0.5f, 0.5f},
         glm::vec3{0.f, 0.f, 0.f});
 
