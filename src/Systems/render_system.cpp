@@ -19,8 +19,8 @@ namespace hyd
 {
 
 struct SimplePushConstantData {
-    glm::mat4 transform{1.f};
-    alignas(16) glm::vec3 color;
+    glm::mat4 transform{1.f}; // projection * view * model
+    glm::mat4 normalMatrix{1.f};
 };
 
 RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass):
@@ -84,8 +84,10 @@ void RenderSystem::renderEntities(
         auto &color = view.get<ColorComponent>(entity);
 
         SimplePushConstantData push{};
-        push.transform = projectionView*transform.mat4();
-        push.color = color.m_color;
+        push.transform = projectionView*transform.mat4();        
+        auto modelMatrix = transform.mat4();
+        push.transform = projectionView * modelMatrix;
+        push.normalMatrix = transform.normalMatrix();
 
         vkCmdPushConstants(
             commandBuffer,

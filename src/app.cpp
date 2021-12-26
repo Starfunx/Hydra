@@ -130,9 +130,8 @@ void App::loadEntities(){
     m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 0.f, 0.f));
     m_registry.emplace<TransformComponent>(entity, 
         glm::vec3{0.f, 0.f, 1.5f},
-        glm::vec3{0.5f, 0.5f, 0.5f},
+        glm::vec3{3.f},
         glm::vec3{0.f, 0.f, 0.f});
-
 }
 
 
