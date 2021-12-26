@@ -5,6 +5,7 @@
 #include "Components/Color.hpp"
 #include "Components/Mesh.hpp"
 #include "Components/Transform.hpp"
+#include "Systems/render_system.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -20,14 +21,6 @@
 namespace hyd
 {
 
-
-struct SimplePushConstantData {
-    glm::mat2 transform{1.f};
-    glm::vec2 offset;
-    alignas(16) glm::vec3 color;
-};
-
-
 App* App::s_Instance = nullptr;
 
 App::App():
@@ -39,15 +32,13 @@ App::App():
     m_window.SetEventCallback(HY_BIND_EVENT_FN(App::onEvent));
 
     loadEntities();
-    createPipelineLayout();
-    createPipeline();
 }
 
-App::~App(){
-    vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
-}
+App::~App(){}
 
 void App::run(){
+    RenderSystem renderSystem{m_device, m_renderer.getSwapChainRenderPass()};
+
     while (!m_shouldEnd)
     {
         glfwPollEvents();
@@ -64,7 +55,7 @@ void App::run(){
             // end offscreen shadow pass
      
             m_renderer.beginSwapChainRenderPass(commandBuffer);
-            renderEntities(commandBuffer);
+            renderSystem.renderEntities(commandBuffer, m_registry);
             m_renderer.endSwapChainRenderPass(commandBuffer);
             
             m_renderer.endFrame();
@@ -117,70 +108,5 @@ void App::loadEntities(){
 
 }
 
-
-void App::createPipelineLayout(){
-    VkPushConstantRange pushConstantRange{};
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(SimplePushConstantData);
-
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pSetLayouts = nullptr;
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-
-    if (vkCreatePipelineLayout(m_device.device(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS){
-        throw std::runtime_error("failed to create pipeline layout");
-    }
-
-}
-
-void App::createPipeline(){
-    assert(m_pipelineLayout != nullptr && "cannot create pipeline before pipeline layout");
-
-    PipelineConfigInfo pipelineConfig{};
-    Pipeline::defaultPipelineConfigInfo(pipelineConfig);
-    pipelineConfig.renderPass = m_renderer.getSwapChainRenderPass();
-    pipelineConfig.pipelineLayout = m_pipelineLayout;
-    m_pipeline = std::make_unique<Pipeline>(
-        m_device,
-        "../shaders/simple_shader.vert.spv",
-        "../shaders/simple_shader.frag.spv",
-        pipelineConfig);
-}
-
-void App::renderEntities(VkCommandBuffer commandBuffer){
-    auto view = m_registry.view<Transform2dComponent, MeshComponent, ColorComponent>();
-    
-    m_pipeline->bind(commandBuffer);
-
-    for(auto entity: view) {
-        auto &transform = view.get<Transform2dComponent>(entity);
-        auto &mesh = view.get<MeshComponent>(entity);
-        auto &color = view.get<ColorComponent>(entity);
-
-        transform.rotation = glm::mod(transform.rotation + 0.001f, glm::two_pi<float>());
-
-        SimplePushConstantData push{};
-        push.transform = transform.mat2();
-        push.offset = transform.translation;
-        push.color = color.m_color;
-
-        vkCmdPushConstants(
-            commandBuffer,
-            m_pipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(SimplePushConstantData),
-            &push);
-
-        mesh.model->bind(commandBuffer);
-        mesh.model->draw(commandBuffer);
-    }
-
-}
 
 } // namespace hyd

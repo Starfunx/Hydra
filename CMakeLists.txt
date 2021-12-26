@@ -24,6 +24,8 @@ set(SOURCES
     ${SRC_DIR}/Renderer/SwapChain.cpp
     ${SRC_DIR}/Renderer/Model.cpp
     ${SRC_DIR}/Renderer/Renderer.cpp
+
+    ${SRC_DIR}/Systems/render_system.cpp
   )
 
 

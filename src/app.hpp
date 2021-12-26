@@ -3,8 +3,6 @@
 #include "Core/Window.hpp" 
 #include "Events/Event.hpp"
 #include "Events/ApplicationEvent.hpp"
-
-#include "Renderer/Pipeline.hpp"
 #include "Renderer/Renderer.hpp"
 
 //libs
@@ -39,9 +37,6 @@ private:
     bool OnWindowResize(WindowResizeEvent& e);
 
     void loadEntities();
-    void createPipelineLayout();
-    void createPipeline();
-    void renderEntities(VkCommandBuffer commandBuffer);
 
     /* data */
     Window m_window;
@@ -50,8 +45,6 @@ private:
     static App* s_Instance;
 
     Device m_device{m_window};
-    std::unique_ptr<Pipeline> m_pipeline;
-    VkPipelineLayout m_pipelineLayout;
     Renderer m_renderer{m_window, m_device};
 
     entt::registry m_registry;
