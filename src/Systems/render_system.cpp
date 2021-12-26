@@ -83,10 +83,6 @@ void RenderSystem::renderEntities(
         auto &mesh = view.get<MeshComponent>(entity);
         auto &color = view.get<ColorComponent>(entity);
 
-
-        transform.rotation.y = glm::mod(transform.rotation.y + 0.0005f, glm::two_pi<float>());
-        transform.rotation.x = glm::mod(transform.rotation.y + 0.00025f, glm::two_pi<float>());
-
         SimplePushConstantData push{};
         push.transform = projectionView*transform.mat4();
         push.color = color.m_color;

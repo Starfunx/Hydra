@@ -5,7 +5,10 @@
 #include "Components/Color.hpp"
 #include "Components/Mesh.hpp"
 #include "Components/Transform.hpp"
+#include "Components/Viewer.hpp"
+
 #include "Systems/render_system.hpp"
+#include "Systems/viewer_controller.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -17,6 +20,7 @@
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
+#include <chrono>
 
 namespace hyd
 {
@@ -38,8 +42,18 @@ App::~App(){}
 
 void App::run(){
     RenderSystem renderSystem{m_device, m_renderer.getSwapChainRenderPass()};
+    ViewerControllerSystem viewerControllerSystem{};
     Camera camera{};
     camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
+
+    const auto viewer_entity = m_registry.create();
+    m_registry.emplace<ViewerComponent>(viewer_entity);
+    m_registry.emplace<TransformComponent>(viewer_entity, 
+        glm::vec3{0.f, 0.f, 1.5f},
+        glm::vec3{0.5f, 0.5f, 0.5f},
+        glm::vec3{0.f, 0.f, 0.f});
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
 
     while (!m_shouldEnd)
     {
@@ -49,6 +63,20 @@ void App::run(){
             /* code */
             // std::cout << "Space" << std::endl;
         }
+        auto newTime = std::chrono::high_resolution_clock::now();
+        float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+        currentTime = newTime;
+        
+        viewerControllerSystem.moveInPlaneXZ(frameTime, m_registry);
+
+        auto view = m_registry.view<TransformComponent, ViewerComponent>();
+        for(auto entity: view) {
+            auto &transform = view.get<TransformComponent>(entity);
+            camera.setViewYXZ(transform.translation, transform.rotation);
+        }
+
+        frameTime = std::min(frameTime, 0.5f);
+        
 
         float aspect = m_renderer.getAspectRatio();
         // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
