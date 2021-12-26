@@ -19,8 +19,7 @@ namespace hyd
 {
 
 struct SimplePushConstantData {
-    glm::mat2 transform{1.f};
-    glm::vec2 offset;
+    glm::mat4 transform{1.f};
     alignas(16) glm::vec3 color;
 };
 
@@ -70,18 +69,21 @@ void RenderSystem::createPipeline(VkRenderPass renderPass){
 
 
 void RenderSystem::renderEntities(VkCommandBuffer commandBuffer, entt::registry& registry){
-    auto view = registry.view<Transform2dComponent, MeshComponent, ColorComponent>();
+    auto view = registry.view<TransformComponent, MeshComponent, ColorComponent>();
     
     m_pipeline->bind(commandBuffer);
 
     for(auto entity: view) {
-        auto &transform = view.get<Transform2dComponent>(entity);
+        auto &transform = view.get<TransformComponent>(entity);
         auto &mesh = view.get<MeshComponent>(entity);
         auto &color = view.get<ColorComponent>(entity);
 
+
+        transform.rotation.y = glm::mod(transform.rotation.y + 0.0005f, glm::two_pi<float>());
+        transform.rotation.x = glm::mod(transform.rotation.y + 0.00025f, glm::two_pi<float>());
+
         SimplePushConstantData push{};
-        push.transform = transform.mat2();
-        push.offset = transform.translation;
+        push.transform = transform.mat4();
         push.color = color.m_color;
 
         vkCmdPushConstants(
