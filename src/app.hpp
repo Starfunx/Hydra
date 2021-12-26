@@ -4,10 +4,8 @@
 #include "Events/Event.hpp"
 #include "Events/ApplicationEvent.hpp"
 
-#include "Renderer/Device.hpp"
 #include "Renderer/Pipeline.hpp"
-#include "Renderer/SwapChain.hpp"
-#include "Renderer/Model.hpp"
+#include "Renderer/Renderer.hpp"
 
 //libs
 #include <entt/entt.hpp>
@@ -43,11 +41,6 @@ private:
     void loadEntities();
     void createPipelineLayout();
     void createPipeline();
-    void createCommandBuffers();
-    void drawFrame();
-    void recreateSwapChain();
-    void recordCommandBuffer(int imageeIndex);
-    void freeCommandBuffers();
     void renderEntities(VkCommandBuffer commandBuffer);
 
     /* data */
@@ -57,13 +50,9 @@ private:
     static App* s_Instance;
 
     Device m_device{m_window};
-    std::unique_ptr<SwapChain> m_swapChain;
     std::unique_ptr<Pipeline> m_pipeline;
     VkPipelineLayout m_pipelineLayout;
-    std::vector<VkCommandBuffer> m_commandBuffers;
-    std::unique_ptr<Model> m_model;
-
-    bool m_windowResized{false};
+    Renderer m_renderer{m_window, m_device};
 
     entt::registry m_registry;
 };

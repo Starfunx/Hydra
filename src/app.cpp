@@ -40,8 +40,7 @@ App::App():
 
     loadEntities();
     createPipelineLayout();
-    recreateSwapChain();
-    createCommandBuffers();
+    createPipeline();
 }
 
 App::~App(){
@@ -57,7 +56,19 @@ void App::run(){
             /* code */
             // std::cout << "Space" << std::endl;
         }
-    drawFrame();
+
+        if (auto commandBuffer = m_renderer.beginFrame()){
+     
+            // beigin offscreen shadow pass
+            // render shadow vasting objects
+            // end offscreen shadow pass
+     
+            m_renderer.beginSwapChainRenderPass(commandBuffer);
+            renderEntities(commandBuffer);
+            m_renderer.endSwapChainRenderPass(commandBuffer);
+            
+            m_renderer.endFrame();
+        }
         
     }
     vkDeviceWaitIdle(m_device.device());
@@ -82,10 +93,9 @@ bool App::OnWindowClose(WindowCloseEvent& e){
 }
 
 bool App::OnWindowResize(WindowResizeEvent& e){
-    m_windowResized = true;
+    m_renderer.setFrameBufferResized();
     return true;
 }
-
 
 
 void App::loadEntities(){
@@ -96,14 +106,6 @@ void App::loadEntities(){
     };
 
     auto model = std::make_shared<Model> (m_device, vertices);
-    // auto triangle = SeGameObject::crerateGameObject();
-    // triangle.m_model = m_seModel;
-    // triangle.m_color = {.1f, .8f, .1f};
-    // triangle.m_transform2d.translation.x = .5f;
-    // triangle.m_transform2d.scale = {.5f, 2.0f};
-    // triangle.m_transform2d.rotation = 0.25f * glm::two_pi<float>();
-
-    // m_gameObjects.push_back(std::move(triangle));
 
     const auto entity = m_registry.create();
     m_registry.emplace<MeshComponent>(entity, model);
@@ -112,9 +114,6 @@ void App::loadEntities(){
         glm::vec2(0.f, 0.f),
         glm::vec2(1.f, 1.f),
         0.f);
-    // m_registry.emplace<position>(entity, i * 1.f, i * 1.f);
-    // if(i % 2 == 0) { m_registry.emplace<velocity>(entity, i * .1f, i * .1f); }
-
 
 }
 
@@ -140,12 +139,11 @@ void App::createPipelineLayout(){
 }
 
 void App::createPipeline(){
-    assert(m_swapChain != nullptr && "cannot create pipeline before swapchain");
     assert(m_pipelineLayout != nullptr && "cannot create pipeline before pipeline layout");
 
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
-    pipelineConfig.renderPass = m_swapChain->getRenderPass();
+    pipelineConfig.renderPass = m_renderer.getSwapChainRenderPass();
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     m_pipeline = std::make_unique<Pipeline>(
         m_device,
@@ -154,132 +152,10 @@ void App::createPipeline(){
         pipelineConfig);
 }
 
-
-
-void App::recreateSwapChain(){
-    
-    auto extent{m_window.getExtent()};
-    while (extent.width == 0 || extent.height == 0) {
-        extent = m_window.getExtent();
-        glfwWaitEvents();
-    }
-    vkDeviceWaitIdle(m_device.device());
-
-    if (m_swapChain == nullptr){
-        m_swapChain = std::make_unique<SwapChain>(m_device, extent);
-    } else {
-        m_swapChain = std::make_unique<SwapChain>(m_device, extent, std::move(m_swapChain));
-        if (m_swapChain->imageCount() != m_commandBuffers.size()){
-            freeCommandBuffers();
-            createCommandBuffers();
-        }
-    }
-
-    // todo : check if render pass is compatible, if so, do not recreate the pipeline
-    createPipeline();
-}
-
-
-void App::createCommandBuffers(){
-    m_commandBuffers.resize(m_swapChain->imageCount());
-
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = m_device.getCommandPool();
-    allocInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
-
-    if(vkAllocateCommandBuffers(m_device.device(), &allocInfo, m_commandBuffers.data()) != VK_SUCCESS){
-        throw std::runtime_error("failed to allocate command buffers!");
-    }
-}
-
-
-void App::drawFrame(){
-   uint32_t imageIndex;
-    auto result = m_swapChain->acquireNextImage(&imageIndex);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR){
-        recreateSwapChain();
-        return;
-    }
-
-
-    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR){
-        throw std::runtime_error(" failed to acquire next swap chain image!");
-    }
-
-    recordCommandBuffer(imageIndex);
-    result = m_swapChain->submitCommandBuffers(&m_commandBuffers[imageIndex], &imageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_windowResized) {
-        m_windowResized = false;
-        recreateSwapChain();
-        return;
-    }
-    else if (result != VK_SUCCESS){
-        throw std::runtime_error("failed to present swapchain image!");
-    }
-}
-
-void App::recordCommandBuffer(int imageIndex){
-    VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        if (vkBeginCommandBuffer(m_commandBuffers[imageIndex], &beginInfo) != VK_SUCCESS){
-            throw std::runtime_error("failed to begin recording command buffer");
-        }
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_swapChain->getRenderPass();
-        renderPassInfo.framebuffer = m_swapChain->getFrameBuffer(imageIndex);
-
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = m_swapChain->getSwapChainExtent();
-
-        std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = {0.1f, 0.5, 0.2, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
-
-        vkCmdBeginRenderPass(m_commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = static_cast<float>(m_swapChain->getSwapChainExtent().width);
-        viewport.height = static_cast<float>(m_swapChain->getSwapChainExtent().height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        VkRect2D scissor{{0, 0}, m_swapChain->getSwapChainExtent()};
-        vkCmdSetViewport(m_commandBuffers[imageIndex], 0, 1, &viewport);
-        vkCmdSetScissor(m_commandBuffers[imageIndex], 0, 1, &scissor);
-
-        renderEntities(m_commandBuffers[imageIndex]);
-
-        vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
-
-        if (vkEndCommandBuffer(m_commandBuffers[imageIndex]) != VK_SUCCESS){
-            throw std::runtime_error("failed to record command buffer!");
-        }
-}
-
-void App::freeCommandBuffers(){
-    vkFreeCommandBuffers(
-        m_device.device(),
-        m_device.getCommandPool(),
-        static_cast<uint32_t>( m_commandBuffers.size()),
-        m_commandBuffers.data());
-    m_commandBuffers.clear();
-}
-
-
 void App::renderEntities(VkCommandBuffer commandBuffer){
     auto view = m_registry.view<Transform2dComponent, MeshComponent, ColorComponent>();
     
     m_pipeline->bind(commandBuffer);
-
 
     for(auto entity: view) {
         auto &transform = view.get<Transform2dComponent>(entity);
@@ -305,26 +181,6 @@ void App::renderEntities(VkCommandBuffer commandBuffer){
         mesh.model->draw(commandBuffer);
     }
 
-
-    // for (auto& obj:m_gameObjects){
-    //     obj.m_transform2d.rotation = glm::mod(obj.m_transform2d.rotation + 0.001f, glm::two_pi<float>());
-
-    //     SimplePushConstantData push{};
-    //     push.transform = obj.m_transform2d.mat2();
-    //     push.offset = obj.m_transform2d.translation;
-    //     push.color = obj.m_color;
-
-    //     vkCmdPushConstants(
-    //         commandBuffer,
-    //         m_pipelineLayout,
-    //         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-    //         0,
-    //         sizeof(SimplePushConstantData),
-    //         &push);
-
-    //     obj.m_model->bind(commandBuffer);
-    //     obj.m_model->draw(commandBuffer);
-    // }
 }
 
 } // namespace hyd

@@ -23,7 +23,7 @@ set(SOURCES
     ${SRC_DIR}/Renderer/Pipeline.cpp
     ${SRC_DIR}/Renderer/SwapChain.cpp
     ${SRC_DIR}/Renderer/Model.cpp
-
+    ${SRC_DIR}/Renderer/Renderer.cpp
   )
 
 
