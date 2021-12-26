@@ -27,13 +27,19 @@ public:
 
     VkCommandBuffer getCurrentCommandBuffer() const { 
         assert(m_isFrameStarted && "Cannot get command buffer when no frame is in progress");
-        return m_commandBuffers[m_currentImageIndex];
+        return m_commandBuffers[m_currentFrameIndex];
     }
 
     VkCommandBuffer beginFrame();
     void endFrame();
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
     void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+
+    int getFrameIndex() const {
+        assert(m_isFrameStarted && "Cannot get frame index when no frame is in progress");
+        return m_currentFrameIndex;
+    }
+
 
     void setFrameBufferResized() { m_frameBufferResized = true; }
 
@@ -50,6 +56,7 @@ private:
     std::vector<VkCommandBuffer> m_commandBuffers;
 
     uint32_t m_currentImageIndex;
+    int m_currentFrameIndex;
     bool m_isFrameStarted;
 
     bool m_frameBufferResized{false};
