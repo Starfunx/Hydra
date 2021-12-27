@@ -25,6 +25,7 @@ set(SOURCES
     ${SRC_DIR}/Renderer/Model.cpp
     ${SRC_DIR}/Renderer/Renderer.cpp
     ${SRC_DIR}/Renderer/Camera.cpp
+    ${SRC_DIR}/Renderer/Buffer.cpp
 
     ${SRC_DIR}/Systems/render_system.cpp
     ${SRC_DIR}/Systems/viewer_controller.cpp
