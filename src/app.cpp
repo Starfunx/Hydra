@@ -83,13 +83,23 @@ void App::run(){
         camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
 
         if (auto commandBuffer = m_renderer.beginFrame()){
-     
+            int frameIndex = m_renderer.getFrameIndex();
+
+            FrameInfo frameInfo{
+                frameIndex,
+                frameTime,
+                commandBuffer,
+                camera
+            };
+
+
+
             // beigin offscreen shadow pass
             // render shadow vasting objects
             // end offscreen shadow pass
      
             m_renderer.beginSwapChainRenderPass(commandBuffer);
-            renderSystem.renderEntities(commandBuffer, m_registry, camera);
+            renderSystem.renderEntities(frameInfo, m_registry);
             m_renderer.endSwapChainRenderPass(commandBuffer);
             
             m_renderer.endFrame();

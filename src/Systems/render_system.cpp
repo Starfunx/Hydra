@@ -69,14 +69,13 @@ void RenderSystem::createPipeline(VkRenderPass renderPass){
 
 
 void RenderSystem::renderEntities(
-    VkCommandBuffer commandBuffer,
-     entt::registry& registry,
-     const Camera& camera ){
+     FrameInfo& frameInfo,
+     entt::registry& registry){
     auto view = registry.view<TransformComponent, MeshComponent, ColorComponent>();
 
-    auto projectionView = camera.getProjection()*camera.getView();
+    m_pipeline->bind(frameInfo.commandBuffer);
 
-    m_pipeline->bind(commandBuffer);
+    auto projectionView = frameInfo.camera.getProjection()*frameInfo.camera.getView();
 
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
@@ -90,15 +89,15 @@ void RenderSystem::renderEntities(
         push.normalMatrix = transform.normalMatrix();
 
         vkCmdPushConstants(
-            commandBuffer,
+            frameInfo.commandBuffer,
             m_pipelineLayout,
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0,
             sizeof(SimplePushConstantData),
             &push);
 
-        mesh.model->bind(commandBuffer);
-        mesh.model->draw(commandBuffer);
+        mesh.model->bind(frameInfo.commandBuffer);
+        mesh.model->draw(frameInfo.commandBuffer);
     }
 
 }

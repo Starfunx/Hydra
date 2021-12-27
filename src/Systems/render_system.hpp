@@ -2,6 +2,7 @@
 
 #include "Renderer/Pipeline.hpp"
 #include "Renderer/Camera.hpp"
+#include "Renderer/FrameInfo.hpp"
 
 //libs
 #include <entt/entt.hpp>
@@ -23,9 +24,8 @@ public:
     RenderSystem &operator=(const RenderSystem&) = delete;
 
     void renderEntities(
-        VkCommandBuffer commandBuffer,
-        entt::registry& registry,
-        const Camera& camera);
+        FrameInfo& frameInfo,
+        entt::registry& registry);
 private:
     void createPipelineLayout();
     void createPipeline(VkRenderPass renderPass);
