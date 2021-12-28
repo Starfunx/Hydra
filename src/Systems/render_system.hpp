@@ -17,7 +17,7 @@ namespace hyd
 class RenderSystem
 {
 public:
-    RenderSystem(Device& device, VkRenderPass renderPass);
+    RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
     ~RenderSystem();
 
     RenderSystem(const RenderSystem&) = delete;
@@ -27,7 +27,7 @@ public:
         FrameInfo& frameInfo,
         entt::registry& registry);
 private:
-    void createPipelineLayout();
+    void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
     void createPipeline(VkRenderPass renderPass);
 
     /* data */

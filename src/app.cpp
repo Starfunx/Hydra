@@ -44,6 +44,13 @@ App::App():
  
     m_window.SetEventCallback(HY_BIND_EVENT_FN(App::onEvent));
 
+
+    globalPool =
+    DescriptorPool::Builder(m_device)
+        .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .build();
+
     loadEntities();
 }
 
@@ -62,8 +69,24 @@ void App::run(){
         uboBuffers[i]->map();
     }
 
+    auto globalSetLayout =
+        DescriptorSetLayout::Builder(m_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .build();
 
-    RenderSystem renderSystem{m_device, m_renderer.getSwapChainRenderPass()};
+    std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+    for (int i = 0; i < globalDescriptorSets.size(); i++) {
+        auto bufferInfo = uboBuffers[i]->descriptorInfo();
+        DescriptorWriter(*globalSetLayout, *globalPool)
+            .writeBuffer(0, &bufferInfo)
+            .build(globalDescriptorSets[i]);
+    }
+
+    RenderSystem renderSystem{
+        m_device,
+        m_renderer.getSwapChainRenderPass(),
+        globalSetLayout->getDescriptorSetLayout()};
+
     ViewerControllerSystem viewerControllerSystem{};
     Camera camera{};
     camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
@@ -111,8 +134,8 @@ void App::run(){
                 frameIndex,
                 frameTime,
                 commandBuffer,
-                camera
-            };
+                camera,
+                globalDescriptorSets[frameIndex]};
 
 
 
@@ -165,13 +188,18 @@ bool App::OnWindowResize(WindowResizeEvent& e){
 void App::loadEntities(){
     std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/smooth_vase.obj");
 
-    const auto entity = m_registry.create();
-    m_registry.emplace<MeshComponent>(entity, model);
-    m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 0.f, 0.f));
-    m_registry.emplace<TransformComponent>(entity, 
-        glm::vec3{0.f, 0.f, 1.5f},
-        glm::vec3{3.f},
-        glm::vec3{0.f, 0.f, 0.f});
+    for (int i{0}; i<10; ++i){
+        for (int j{0}; j<10; ++j){
+
+            const auto entity = m_registry.create();
+            m_registry.emplace<MeshComponent>(entity, model);
+            m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 0.f, 0.f));
+            m_registry.emplace<TransformComponent>(entity, 
+                glm::vec3{-5+i*1.f, 0.f, -5+j*1.f},
+                glm::vec3{3.f},
+                glm::vec3{0.f, 0.f, 0.f});
+        }
+    }
 }
 
 
