@@ -30,7 +30,9 @@ namespace hyd
 struct GlobalUbo
 {
     glm::mat4 projectionView{1.f};
-    glm::vec3 lightDirection = glm::normalize(glm::vec3(1.f, -3.f, -1.f));
+    glm::vec4 ambiantLightColor{1.f, 1.f, 1.f, 0.2f}; // w is light intensity
+    glm::vec3 lightPosition{-1.f};
+    alignas(16)glm::vec4 lightColor{1.f}; // w is light intensity
 };
 
 
@@ -94,7 +96,7 @@ void App::run(){
     const auto viewer_entity = m_registry.create();
     m_registry.emplace<ViewerComponent>(viewer_entity);
     m_registry.emplace<TransformComponent>(viewer_entity, 
-        glm::vec3{0.f, 0.f, 1.5f},
+        glm::vec3{0.f, 0.f, -2.5f},
         glm::vec3{0.5f, 0.5f, 0.5f},
         glm::vec3{0.f, 0.f, 0.f});
 
@@ -125,7 +127,7 @@ void App::run(){
 
         float aspect = m_renderer.getAspectRatio();
         // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
-        camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+        camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
         if (auto commandBuffer = m_renderer.beginFrame()){
             int frameIndex = m_renderer.getFrameIndex();
@@ -200,6 +202,15 @@ void App::loadEntities(){
                 glm::vec3{0.f, 0.f, 0.f});
         }
     }
+    std::shared_ptr<Model> planeModel = Model::createModelFromFile(m_device, "../models/quad.obj");
+
+    const auto entity = m_registry.create();
+    m_registry.emplace<MeshComponent>(entity, planeModel);
+    m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 0.f, 0.f));
+    m_registry.emplace<TransformComponent>(entity, 
+    glm::vec3{0.f, 0.f, 0.f},
+    glm::vec3{3.f},
+    glm::vec3{0.f, 0.f, 0.f});
 }
 
 
