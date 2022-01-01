@@ -36,7 +36,6 @@ MasterRenderSytstem::MasterRenderSytstem(Device& device, Renderer& renderer)
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
         .build();
 
-    m_uboBuffers = std::vector<std::unique_ptr<Buffer>>(SwapChain::MAX_FRAMES_IN_FLIGHT);
     for (int i = 0; i < m_uboBuffers.size(); i++) {
         m_uboBuffers[i] = std::make_unique<Buffer>(
             m_device,
@@ -53,7 +52,6 @@ MasterRenderSytstem::MasterRenderSytstem(Device& device, Renderer& renderer)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();
 
-    m_globalDescriptorSets = std::vector<VkDescriptorSet>(SwapChain::MAX_FRAMES_IN_FLIGHT);
     for (int i = 0; i < m_globalDescriptorSets.size(); i++) {
         auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
         DescriptorWriter(*globalSetLayout, *globalPool)
