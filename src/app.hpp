@@ -5,7 +5,6 @@
 #include "Events/ApplicationEvent.hpp"
 
 #include "Renderer/Renderer.hpp"
-#include "Renderer/DescriptorSet.hpp"
 
 //libs
 #include <entt/entt.hpp>
@@ -49,9 +48,6 @@ private:
     Device m_device{m_window};
     Renderer m_renderer{m_window, m_device};
 
-    // note: order of declarations matters
-    std::unique_ptr<DescriptorPool> globalPool{};
-    
     entt::registry m_registry;
 };
 
