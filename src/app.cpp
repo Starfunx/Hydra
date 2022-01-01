@@ -8,10 +8,12 @@
 #include "Components/Viewer.hpp"
 
 #include "Systems/render_system.hpp"
+#include "systems/point_light_render_system.hpp"
+
 #include "Systems/viewer_controller.hpp"
 
-#include "Renderer/Buffer.hpp"
 
+#include "Renderer/Buffer.hpp"
 //libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -29,9 +31,10 @@ namespace hyd
 
 struct GlobalUbo
 {
-    glm::mat4 projectionView{1.f};
+    glm::mat4 projection{1.f};
+    glm::mat4 view{1.f};
     glm::vec4 ambiantLightColor{1.f, 1.f, 1.f, 0.2f}; // w is light intensity
-    glm::vec3 lightPosition{-1.f};
+    glm::vec3 lightPosition{-1.f, -3.f, -1.f};
     alignas(16)glm::vec4 lightColor{1.f}; // w is light intensity
 };
 
@@ -85,6 +88,11 @@ void App::run(){
     }
 
     RenderSystem renderSystem{
+        m_device,
+        m_renderer.getSwapChainRenderPass(),
+        globalSetLayout->getDescriptorSetLayout()};
+
+    PointLightRenderSystem pointLightRenderSystem{
         m_device,
         m_renderer.getSwapChainRenderPass(),
         globalSetLayout->getDescriptorSetLayout()};
@@ -143,7 +151,8 @@ void App::run(){
 
             // update
             GlobalUbo ubo{};
-            ubo.projectionView = camera.getProjection()*camera.getView();
+            ubo.projection = camera.getProjection();
+            ubo.view = camera.getView();
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             uboBuffers[frameIndex]->flush();
 
@@ -154,7 +163,12 @@ void App::run(){
             // end offscreen shadow pass
      
             m_renderer.beginSwapChainRenderPass(commandBuffer);
-            renderSystem.renderEntities(frameInfo, m_registry);
+            
+                renderSystem.renderEntities(frameInfo, m_registry);
+                
+                // don't care about entities, just render the only point light in ubo
+                pointLightRenderSystem.renderPointLightEntities(frameInfo, m_registry);
+           
             m_renderer.endSwapChainRenderPass(commandBuffer);
             
             m_renderer.endFrame();
