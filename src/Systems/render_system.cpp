@@ -1,112 +1,137 @@
 #include "render_system.hpp"
 
-#include "Components/Color.hpp"
-#include "Components/Mesh.hpp"
+#include "Renderer/SwapChain.hpp"
+
+#include "Renderer/Buffer.hpp"
+
 #include "Components/Transform.hpp"
+#include "Components/Viewer.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-
-// std
-#include <stdexcept>
-#include <array>
-#include <iostream>
+#include <glm/gtc/constants.hpp> // two_pi
 
 namespace hyd
 {
 
-struct SimplePushConstantData {
-    glm::mat4 modelMatrix{1.f}; // projection * view * model
-    glm::mat4 normalMatrix{1.f};
+struct GlobalUbo
+{
+    glm::mat4 projection{1.f};
+    glm::mat4 view{1.f};
+    glm::vec4 ambiantLightColor{1.f, 1.f, 1.f, 0.2f}; // w is light intensity
+    glm::vec3 lightPosition{-1.f, -3.f, -1.f};
+    alignas(16)glm::vec4 lightColor{1.f}; // w is light intensity
 };
 
-RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout):
-m_device{device}{
-    createPipelineLayout(globalSetLayout);
-    createPipeline(renderPass);
-}
-RenderSystem::~RenderSystem(){
-    vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
-}
 
-void RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
+RenderSytstem::RenderSytstem(Device& device, Renderer& renderer)
+: m_device{device}, m_renderer{renderer}
+{
+    // global descriptor pool
+    globalPool =
+    DescriptorPool::Builder(m_device)
+        .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .build();
 
-    VkPushConstantRange pushConstantRange{};
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(SimplePushConstantData);
-
-  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-
-    if (vkCreatePipelineLayout(m_device.device(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS){
-        throw std::runtime_error("failed to create pipeline layout");
+    for (int i = 0; i < m_uboBuffers.size(); i++) {
+        m_uboBuffers[i] = std::make_unique<Buffer>(
+            m_device,
+            sizeof(GlobalUbo),
+            1,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        m_uboBuffers[i]->map();
     }
 
-}
+    // global descriptor sets
+    auto globalSetLayout =
+        DescriptorSetLayout::Builder(m_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
 
-void RenderSystem::createPipeline(VkRenderPass renderPass){
-    assert(m_pipelineLayout != nullptr && "cannot create pipeline before pipeline layout");
+    for (int i = 0; i < m_globalDescriptorSets.size(); i++) {
+        auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
+        DescriptorWriter(*globalSetLayout, *globalPool)
+            .writeBuffer(0, &bufferInfo)
+            .build(m_globalDescriptorSets[i]);
+    }
 
-    PipelineConfigInfo pipelineConfig{};
-    Pipeline::defaultPipelineConfigInfo(pipelineConfig);
-    pipelineConfig.renderPass = renderPass;
-    pipelineConfig.pipelineLayout = m_pipelineLayout;
-    m_pipeline = std::make_unique<Pipeline>(
+    // SUB RENDER SYSTEMS
+    m_renderSystem = std::make_unique<SimpleRenderSystem>(
         m_device,
-        "../shaders/simple_shader.vert.spv",
-        "../shaders/simple_shader.frag.spv",
-        pipelineConfig);
+        m_renderer.getSwapChainRenderPass(),
+        globalSetLayout->getDescriptorSetLayout());
+
+    m_pointLightRenderSystem = std::make_unique<PointLightRenderSystem>(
+        m_device,
+        m_renderer.getSwapChainRenderPass(),
+        globalSetLayout->getDescriptorSetLayout());
+
 }
 
+RenderSytstem::~RenderSytstem()
+{
+}
 
-void RenderSystem::renderEntities(
-     FrameInfo& frameInfo,
-     entt::registry& registry){
-    auto view = registry.view<TransformComponent, MeshComponent, ColorComponent>();
+void RenderSytstem::renderEntities(const float frameTime, entt::registry& registry)
+{
 
-    m_pipeline->bind(frameInfo.commandBuffer);
-
-    vkCmdBindDescriptorSets(
-        frameInfo.commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipelineLayout,
-        0,
-        1,
-        &frameInfo.globalDescriptorSet,
-        0,
-        nullptr);
+    // get camera
+    auto view = registry.view<TransformComponent, ViewerComponent>();
+    Camera camera{};
+    camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
 
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
-        auto &mesh = view.get<MeshComponent>(entity);
-        auto &color = view.get<ColorComponent>(entity);
+        camera.setViewYXZ(transform.translation, transform.rotation);
+    }
 
-        SimplePushConstantData push{};
-        push.modelMatrix = transform.mat4();
-        push.normalMatrix = transform.normalMatrix();
 
-        vkCmdPushConstants(
-            frameInfo.commandBuffer,
-            m_pipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(SimplePushConstantData),
-            &push);
+    float aspect = m_renderer.getAspectRatio();
+    // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
+    camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
-        mesh.model->bind(frameInfo.commandBuffer);
-        mesh.model->draw(frameInfo.commandBuffer);
+
+    if (auto commandBuffer = m_renderer.beginFrame()){
+        int frameIndex = m_renderer.getFrameIndex();
+
+        FrameInfo frameInfo{
+            frameIndex,
+            frameTime,
+            commandBuffer,
+            camera,
+            m_globalDescriptorSets[frameIndex]};
+
+
+
+        // update
+        GlobalUbo ubo{};
+        ubo.projection = camera.getProjection();
+        ubo.view = camera.getView();
+        m_uboBuffers[frameIndex]->writeToBuffer(&ubo);
+        m_uboBuffers[frameIndex]->flush();
+
+        // RENDER
+        
+        // beigin offscreen shadow pass
+        // render shadow vasting objects
+        // end offscreen shadow pass
+
+        m_renderer.beginSwapChainRenderPass(commandBuffer);
+        
+            m_renderSystem->renderEntities(frameInfo, registry);
+            
+            // don't care about entities, just render the only point light in ubo
+            m_pointLightRenderSystem->renderPointLightEntities(frameInfo, registry);
+        
+        m_renderer.endSwapChainRenderPass(commandBuffer);
+        
+        m_renderer.endFrame();
     }
 
 }
 
-} // namespace se
+} // namespace hyd

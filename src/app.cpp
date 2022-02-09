@@ -7,7 +7,7 @@
 #include "Components/Transform.hpp"
 #include "Components/Viewer.hpp"
 
-#include "systems/master_render_system.hpp"
+#include "systems/render_system.hpp"
 #include "Systems/viewer_controller.hpp"
 
 //libs
@@ -41,7 +41,7 @@ App::~App(){}
 
 void App::run(){
 
-    MasterRenderSytstem renderSystem{m_device, m_renderer};
+    RenderSytstem renderSystem{m_device, m_renderer};
 
     ViewerControllerSystem viewerControllerSystem{};
     

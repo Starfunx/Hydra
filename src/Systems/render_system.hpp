@@ -1,42 +1,45 @@
 #pragma once
 
-#include "Renderer/Pipeline.hpp"
-#include "Renderer/Camera.hpp"
-#include "Renderer/FrameInfo.hpp"
+#include "Core/Window.hpp"
 
-//libs
+#include "Renderer/Renderer.hpp"
+#include "Renderer/DescriptorSet.hpp"
+
+#include "sub_render_systems/simple_render_system.hpp"
+#include "sub_render_systems/point_light_render_system.hpp"
+
+// libs
 #include <entt/entt.hpp>
 
 // std
 #include <memory>
-#include <vector>
 
 namespace hyd
 {
+    class RenderSytstem
+    {
+    public:
+        RenderSytstem(Device& device, Renderer& renderer);
+        ~RenderSytstem();
     
-class RenderSystem
-{
-public:
-    RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-    ~RenderSystem();
+        RenderSytstem (const RenderSytstem&) = delete;
+        RenderSytstem& operator=(const RenderSytstem&) = delete;
 
-    RenderSystem(const RenderSystem&) = delete;
-    RenderSystem &operator=(const RenderSystem&) = delete;
+        void renderEntities(float frameTime, entt::registry& registry);
+    private:
+        /* data */
+        Device& m_device;
+        Renderer& m_renderer;
 
-    void renderEntities(
-        FrameInfo& frameInfo,
-        entt::registry& registry);
-private:
-    void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
-    void createPipeline(VkRenderPass renderPass);
+        std::unique_ptr<DescriptorPool> globalPool{};
 
-    /* data */
-    Device& m_device;
+        //subrenderSystems
+        std::unique_ptr<SimpleRenderSystem> m_renderSystem;
+        std::unique_ptr<PointLightRenderSystem> m_pointLightRenderSystem;
+        
 
-    std::unique_ptr<Pipeline> m_pipeline;
-    VkPipelineLayout m_pipelineLayout;
-  
-};
-
-} // namespace se
-
+        std::vector<VkDescriptorSet> m_globalDescriptorSets = std::vector<VkDescriptorSet>(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        std::vector<std::unique_ptr<Buffer>> m_uboBuffers = std::vector<std::unique_ptr<Buffer>>(SwapChain::MAX_FRAMES_IN_FLIGHT);
+    };
+        
+} // namespace hyd

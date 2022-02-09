@@ -28,10 +28,11 @@ set(SOURCES
     ${SRC_DIR}/Renderer/Buffer.cpp
     ${SRC_DIR}/Renderer/DescriptorSet.cpp
 
-    ${SRC_DIR}/Systems/render_system.cpp
-    ${SRC_DIR}/Systems/point_light_render_system.cpp
-    ${SRC_DIR}/Systems/master_render_system.cpp
     ${SRC_DIR}/Systems/viewer_controller.cpp
+    
+    ${SRC_DIR}/Systems/render_system.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/point_light_render_system.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/simple_render_system.cpp
   )
 
 
