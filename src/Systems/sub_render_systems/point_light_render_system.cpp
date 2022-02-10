@@ -54,6 +54,8 @@ void PointLightRenderSystem::createPipeline(VkRenderPass renderPass){
 
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+    pipelineConfig.attributeDescriptions.clear();
+    pipelineConfig.bindingDescriptions.clear();
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     m_pipeline = std::make_unique<Pipeline>(
@@ -82,28 +84,7 @@ void PointLightRenderSystem::renderPointLightEntities(
         nullptr);
 
     vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
-        
-    // for(auto entity: view) {
-    //     auto &transform = view.get<TransformComponent>(entity);
-    //     auto &mesh = view.get<MeshComponent>(entity);
-    //     auto &color = view.get<ColorComponent>(entity);
-
-    //     SimplePushConstantData push{};
-    //     push.modelMatrix = transform.mat4();
-    //     push.normalMatrix = transform.normalMatrix();
-
-    //     vkCmdPushConstants(
-    //         frameInfo.commandBuffer,
-    //         m_pipelineLayout,
-    //         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-    //         0,
-    //         sizeof(SimplePushConstantData),
-    //         &push);
-
-    //     mesh.model->bind(frameInfo.commandBuffer);
-    //     mesh.model->draw(frameInfo.commandBuffer);
-    // }
-
+    
 }
 
 } // namespace se

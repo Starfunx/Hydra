@@ -25,6 +25,31 @@ struct SimplePushConstantData {
 
 NewRenderSystem::NewRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout):
 m_device{device}{
+
+    // m_descriptorPool = 
+    // DescriptorPool::Builder(m_device)
+    //     .setMaxSets(1)
+    //     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
+    //     .build();
+// m_materialDescriptorSets
+// m_uboBuffers
+
+  // global descriptor sets
+    // auto globalSetLayout =
+    //     DescriptorSetLayout::Builder(m_device)
+    //         .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+    //         .build();
+
+    // for (int i = 0; i < m_materialDescriptorSets.size(); i++) {
+    //     auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
+    //     DescriptorWriter(*globalSetLayout, *m_descriptorPool)
+    //         .writeBuffer(0, &bufferInfo)
+    //         .build(m_materialDescriptorSets[i]);
+    // }
+
+
+
+
     createPipelineLayout(globalSetLayout);
     createPipeline(renderPass);
 }
