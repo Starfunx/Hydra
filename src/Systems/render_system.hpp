@@ -7,6 +7,7 @@
 
 #include "sub_render_systems/simple_render_system.hpp"
 #include "sub_render_systems/point_light_render_system.hpp"
+#include "sub_render_systems/new_render_system.hpp"
 
 // libs
 #include <entt/entt.hpp>
@@ -31,11 +32,13 @@ namespace hyd
         Device& m_device;
         Renderer& m_renderer;
 
+        // global pool, for objects shared by all renderers
         std::unique_ptr<DescriptorPool> globalPool{};
 
         //subrenderSystems
         std::unique_ptr<SimpleRenderSystem> m_renderSystem;
         std::unique_ptr<PointLightRenderSystem> m_pointLightRenderSystem;
+        std::unique_ptr<NewRenderSystem> m_new_render_system;
         
 
         std::vector<VkDescriptorSet> m_globalDescriptorSets = std::vector<VkDescriptorSet>(SwapChain::MAX_FRAMES_IN_FLIGHT);

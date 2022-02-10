@@ -17,9 +17,9 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
   vec4 lightColor; // w is intensity
 } global_ubo;
 
-layout(set = 1, binding = 0) uniform MaterialUbo {
-    vec3 color;
-} object_ubo;
+// layout(set = 1, binding = 0) uniform MaterialUbo {
+//     vec3 color;
+// } object_ubo;
 
 layout (push_constant) uniform Push {
     mat4 modelMatrix;
