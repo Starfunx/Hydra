@@ -150,7 +150,7 @@ void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface){
 }
 
 void Window::errorCallback(int error, const char* description){
-    std::string strerror = "glfwError" + error;
+    std::string strerror = "glfwError"; // + error;
     strerror += description;
     throw std::runtime_error(strerror);
 }

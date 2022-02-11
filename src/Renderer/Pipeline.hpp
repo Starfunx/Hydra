@@ -13,6 +13,8 @@ namespace hyd
 {
 
 struct PipelineConfigInfo {
+    PipelineConfigInfo() = default;
+    
     PipelineConfigInfo(const PipelineConfigInfo&) = delete;
     PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
@@ -43,7 +45,6 @@ public:
 
     ~Pipeline();
 
-    Pipeline() = default; 
     Pipeline(const Pipeline&) = delete;
     Pipeline operator=(const Pipeline&) = delete;
 
