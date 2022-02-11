@@ -25,6 +25,14 @@ layout (push_constant) uniform Push {
 
 void main(){
 
-    outColor = vec4(mat_ubo.color, 1.0);
-    // outColor = vec4(0.5, 1.0, 1.0, 1.0);
+    vec3 directionToLight = global_ubo.lightPosition - fragPosWorld;
+    float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
+
+    vec3 lightColor = global_ubo.lightColor.xyz * global_ubo.lightColor.w * attenuation;
+    vec3 ambientLight = global_ubo.ambientLightColor.xyz * global_ubo.ambientLightColor.w;
+    vec3 diffuseLight = lightColor * max(dot(normalize(fragNormalWorld), normalize(directionToLight)), 0);
+    
+
+    outColor = vec4((diffuseLight + ambientLight) * mat_ubo.color, 1.0);
+
 }
