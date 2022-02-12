@@ -27,6 +27,7 @@ set(SOURCES
     ${SRC_DIR}/Renderer/Camera.cpp
     ${SRC_DIR}/Renderer/Buffer.cpp
     ${SRC_DIR}/Renderer/DescriptorSet.cpp
+    ${SRC_DIR}/Renderer/Texture.cpp
 
     ${SRC_DIR}/Systems/viewer_controller.cpp
     
@@ -71,22 +72,22 @@ target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 
 ###########################################################
 # GLM
-
 add_subdirectory(${VENDOR_DIR}/glm)
 target_link_libraries(${CMAKE_PROJECT_NAME} glm)
 
 ###########################################################
 # TinyObj
-
 include_directories(${VENDOR_DIR}/tinyobj)
 
 #############################################################
 # Entt
-
 target_include_directories(${CMAKE_PROJECT_NAME}
     PUBLIC 
         ${VENDOR_DIR}/entt/src/
 )
+#############################################################
+#stb
+include_directories(${VENDOR_DIR}/stb)
 
 #############################################################
 
