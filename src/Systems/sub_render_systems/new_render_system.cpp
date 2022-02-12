@@ -35,7 +35,7 @@ m_device{device}{
 
     m_objectPool = 
     DescriptorPool::Builder(m_device)
-        .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .setMaxSets(1000) // large amount alocated
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
         .build();
 
@@ -137,37 +137,27 @@ void NewRenderSystem::renderEntities(
 
 
     static int counter = 0;
+    static int i = 0;
 
     // for each Materials
         // bind material descriptor set - at set #1
+    glm::vec3 last_color = glm::vec3(1);
+    int material_index = 0;
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
         auto &mesh = view.get<MeshComponent>(entity);
         auto &color = view.get<ColorComponent>(entity);
 
-        SimplePushConstantData push{};
-        push.modelMatrix = transform.mat4();
-        push.normalMatrix = transform.normalMatrix();
-
-        vkCmdPushConstants(
-            frameInfo.commandBuffer,
-            m_pipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(SimplePushConstantData),
-            &push);
-
         // update
         ColorUbo ubo{};
-        // ubo.color = glm::vec3(1.0, 0.0, 0.0);
-        // m_uboBuffers[frameInfo.FrameIndex]->writeToBuffer(&ubo);
-        // m_uboBuffers[frameInfo.FrameIndex]->flush();
-        ubo.color = glm::vec3(1.0, 0.0, 0.0);
-        m_uboBuffers[0]->writeToBuffer(&ubo);
-        m_uboBuffers[0]->flush();
-        ubo.color = glm::vec3(1.0, 1.0, 0.0);
-        m_uboBuffers[1]->writeToBuffer(&ubo);
-        m_uboBuffers[1]->flush();
+        ubo.color = color.m_color;
+        
+        if (color.m_color != last_color){
+            material_index +=1;
+        }
+
+        m_uboBuffers[material_index]->writeToBuffer(&ubo);
+        m_uboBuffers[material_index]->flush();
 
         vkCmdBindDescriptorSets(
                 frameInfo.commandBuffer,
@@ -175,30 +165,32 @@ void NewRenderSystem::renderEntities(
                 m_pipelineLayout,
                 1,
                 1,
-                &m_descriptorSets[0],
+                &m_descriptorSets[material_index],
                 0,
                 nullptr);
-
-        if (counter == 45){
-            vkCmdBindDescriptorSets(
-                    frameInfo.commandBuffer,
-                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    m_pipelineLayout,
-                    1,
-                    1,
-                    &m_descriptorSets[1],
-                    0,
-                    nullptr);
-        }
-                
+    
         // for each obj that uses the material
             // bind object descriptor set - at set #2
+
+            SimplePushConstantData push{};
+            push.modelMatrix = transform.mat4();
+            push.normalMatrix = transform.normalMatrix();
+
+            vkCmdPushConstants(
+                frameInfo.commandBuffer,
+                m_pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(SimplePushConstantData),
+                &push);
+
             // bind obj model
+            mesh.model->bind(frameInfo.commandBuffer);
             // draw object
-        mesh.model->bind(frameInfo.commandBuffer);
-        mesh.model->draw(frameInfo.commandBuffer);
+            mesh.model->draw(frameInfo.commandBuffer);
         counter++;
     }
+    i= 1;
     counter = 0;
 }
 

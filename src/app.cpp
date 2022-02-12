@@ -106,7 +106,7 @@ void App::loadEntities(){
         for (int j{0}; j<10; ++j){
             const auto entity = m_registry.create();
             m_registry.emplace<MeshComponent>(entity, model);
-            m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 1.f-0.1f*i, 0.f));
+            m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 1.f-0.1f*i, 0.2f+0.1f*j));
             m_registry.emplace<TransformComponent>(entity, 
                 glm::vec3{-5+i*1.f, 0.f, -5+j*1.f},
                 glm::vec3{3.f},
