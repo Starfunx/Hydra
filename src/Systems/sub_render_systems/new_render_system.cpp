@@ -39,7 +39,13 @@ m_device{device}{
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
         .build();
 
+    // allocate descriptor sets from the descriptor pool
+    auto materialSetLayout =
+        DescriptorSetLayout::Builder(m_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
 
+    // allocate buffers
     for (int i = 0; i < m_uboBuffers.size(); i++) {
     m_uboBuffers[i] = std::make_unique<Buffer>(
         m_device,
@@ -50,15 +56,7 @@ m_device{device}{
     m_uboBuffers[i]->map();
     }
 
-    // m_descriptorSets
-    // m_uboBuffers
-
-  // global descriptor sets
-    auto materialSetLayout =
-        DescriptorSetLayout::Builder(m_device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-            .build();
-
+    // write descriptors with buffers
     for (int i = 0; i < m_descriptorSets.size(); i++) {
         auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
         DescriptorWriter(*materialSetLayout, *m_objectPool)

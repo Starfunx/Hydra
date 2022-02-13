@@ -57,11 +57,6 @@ void App::run(){
     while (!m_shouldEnd)
     {
         glfwPollEvents();
-        if (Input::IsKeyPressed(key::Space))
-        {
-            /* code */
-            // std::cout << "Space" << std::endl;
-        }
         auto newTime = std::chrono::high_resolution_clock::now();
         float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
         currentTime = newTime;
@@ -70,7 +65,6 @@ void App::run(){
         viewerControllerSystem.moveInPlaneXZ(frameTime, m_registry);
 
         renderSystem.renderEntities(frameTime, m_registry);
-
         
     }
     vkDeviceWaitIdle(m_device.device());
@@ -79,8 +73,6 @@ void App::run(){
 void App::onEvent(Event& e){
 
     // std::cout << e << std::endl;
-
-
     EventDispatcher dispatcher(e);
 
     dispatcher.Dispatch<WindowCloseEvent>(HY_BIND_EVENT_FN(App::OnWindowClose));

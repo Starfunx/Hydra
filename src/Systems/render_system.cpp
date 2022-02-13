@@ -60,11 +60,6 @@ RenderSytstem::RenderSytstem(Device& device, Renderer& renderer)
     }
 
     // SUB RENDER SYSTEMS
-    m_renderSystem = std::make_unique<SimpleRenderSystem>(
-        m_device,
-        m_renderer.getSwapChainRenderPass(),
-        globalSetLayout->getDescriptorSetLayout());
-
     m_pointLightRenderSystem = std::make_unique<PointLightRenderSystem>(
         m_device,
         m_renderer.getSwapChainRenderPass(),
@@ -127,7 +122,6 @@ void RenderSytstem::renderEntities(const float frameTime, entt::registry& regist
 
         m_renderer.beginSwapChainRenderPass(commandBuffer);
         
-            // m_renderSystem->renderEntities(frameInfo, registry);
             m_new_render_system->renderEntities(frameInfo, registry);
             
             // don't care about entities, just render the only point light in ubo
