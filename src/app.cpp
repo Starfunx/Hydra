@@ -92,6 +92,13 @@ bool App::OnWindowResize(WindowResizeEvent& e){
 }
 
 void App::loadEntities(){
+
+    Material material;
+    material.name = std::string("TestMat");
+    std::shared_ptr<Texture> texture = std::make_shared<Texture>(m_device, "../textures/dragon_head_flat.png");
+    material.textures.push_back(texture);
+    m_materials[material.name] = material;
+
     std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/smooth_vase.obj");
 
     for (int i{0}; i<10; ++i){
@@ -99,6 +106,7 @@ void App::loadEntities(){
             const auto entity = m_registry.create();
             m_registry.emplace<MeshComponent>(entity, model);
             m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 1.f-0.1f*i, 0.2f+0.1f*j));
+            m_registry.emplace<Material>(entity, m_materials["TestMat"]);
             m_registry.emplace<TransformComponent>(entity, 
                 glm::vec3{-5+i*1.f, 0.f, -5+j*1.f},
                 glm::vec3{3.f},
