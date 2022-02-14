@@ -14,9 +14,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
   vec4 lightColor; // w is intensity
 } global_ubo;
 
-layout(set = 1, binding = 0) uniform MaterialUbo {
-  vec3 color;
-} mat_ubo;
+layout(set = 1, binding = 1) uniform sampler2D texSampler;
 
 layout (push_constant) uniform Push {
     mat4 modelMatrix;
@@ -33,6 +31,5 @@ void main(){
     vec3 diffuseLight = lightColor * max(dot(normalize(fragNormalWorld), normalize(directionToLight)), 0);
     
 
-    outColor = vec4((diffuseLight + ambientLight) * mat_ubo.color, 1.0);
-
+    outColor = texture(texSampler, uv)*vec4((diffuseLight + ambientLight);
 }
