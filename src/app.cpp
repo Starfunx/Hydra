@@ -95,7 +95,7 @@ void App::loadEntities(){
 
     Material material;
     material.name = std::string("TestMat");
-    std::shared_ptr<Texture> texture = std::make_shared<Texture>(m_device, "../textures/dragon_head_flat.png");
+    std::shared_ptr<Texture> texture = std::make_shared<Texture>(m_device, "../textures/dirt.jpg");
     material.textures.push_back(texture);
     m_materials[material.name] = material;
 
@@ -128,7 +128,7 @@ void App::loadEntities(){
     m_registry.emplace<Material>(entity, material2);
     m_registry.emplace<TransformComponent>(entity, 
     glm::vec3{0.f, 0.05f, 0.f},
-    glm::vec3{2.f, -2.f, 2.f},
+    glm::vec3{1.f, -1.f, 1.f},
     glm::vec3{0.f, 3.1415f, 0.f});
 }
 
