@@ -12,6 +12,7 @@ namespace hyd
     std::string name;
     VkDescriptorSet material_descriptor{VK_NULL_HANDLE};
     std::vector<std::shared_ptr<Texture>> textures;
+    int material_index;
     };
 
 

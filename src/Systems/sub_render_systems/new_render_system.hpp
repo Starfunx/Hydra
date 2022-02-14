@@ -41,6 +41,7 @@ private:
     std::unique_ptr<Pipeline> m_pipeline;
     VkPipelineLayout m_pipelineLayout;
 
+    std::unique_ptr<DescriptorSetLayout> m_materialSetLayout;
     std::vector<VkDescriptorSet> m_descriptorSets = std::vector<VkDescriptorSet>(1000);
     std::vector<std::unique_ptr<Buffer>> m_uboBuffers = std::vector<std::unique_ptr<Buffer>>(1000);
 

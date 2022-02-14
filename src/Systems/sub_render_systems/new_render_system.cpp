@@ -3,6 +3,7 @@
 #include "Components/Color.hpp"
 #include "Components/Mesh.hpp"
 #include "Components/Transform.hpp"
+#include "Components/Material.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -36,35 +37,36 @@ m_device{device}{
     m_objectPool = 
     DescriptorPool::Builder(m_device)
         .setMaxSets(1000) // large amount alocated
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
+        // .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         .build();
 
     // allocate descriptor sets from the descriptor pool
-    auto materialSetLayout =
+    m_materialSetLayout =
         DescriptorSetLayout::Builder(m_device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();
 
     // allocate buffers
-    for (int i = 0; i < m_uboBuffers.size(); i++) {
-    m_uboBuffers[i] = std::make_unique<Buffer>(
-        m_device,
-        sizeof(ColorUbo),
-        1,
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    m_uboBuffers[i]->map();
-    }
+    // for (int i = 0; i < m_uboBuffers.size(); i++) {
+    // m_uboBuffers[i] = std::make_unique<Buffer>(
+    //     m_device,
+    //     sizeof(ColorUbo),
+    //     1,
+    //     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+    //     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    // m_uboBuffers[i]->map();
+    // }
 
     // write descriptors with buffers
-    for (int i = 0; i < m_descriptorSets.size(); i++) {
-        auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
-        DescriptorWriter(*materialSetLayout, *m_objectPool)
-            .writeBuffer(0, &bufferInfo)
-            .build(m_descriptorSets[i]);
-    }
+    // auto imageInfo = texture.getImageInfo();
+    // for (int i = 0; i < m_descriptorSets.size(); i++) {
+    //     DescriptorWriter(*materialSetLayout, *m_objectPool)
+    //         .writeImage(1, &imageInfo)
+    //         .build(m_descriptorSets[i]);
+    // }
 
-    createPipelineLayout(globalSetLayout, materialSetLayout->getDescriptorSetLayout());
+    createPipelineLayout(globalSetLayout, m_materialSetLayout->getDescriptorSetLayout());
     createPipeline(renderPass);
 }
 
@@ -112,7 +114,7 @@ void NewRenderSystem::createPipeline(VkRenderPass renderPass){
 void NewRenderSystem::renderEntities(
      FrameInfo& frameInfo,
      entt::registry& registry){
-    auto view = registry.view<TransformComponent, MeshComponent, ColorComponent>();
+    auto view = registry.view<TransformComponent, MeshComponent, Material>();
 
     // bind pipline
     m_pipeline->bind(frameInfo.commandBuffer);
@@ -128,42 +130,33 @@ void NewRenderSystem::renderEntities(
             0,
             nullptr);
 
-    // sorting by materials
-    // registry.sort<renderable>([](const auto &lhs, const auto &rhs) {
-    //     return lhs.z < rhs.z;
-    // });
 
 
-    static int counter = 0;
-    static int i = 0;
-
-    // for each Materials
-        // bind material descriptor set - at set #1
-    glm::vec3 last_color = glm::vec3(1);
-    int material_index = 0;
+    static int material_index{0};
+    // for each object/Materials
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
         auto &mesh = view.get<MeshComponent>(entity);
-        auto &color = view.get<ColorComponent>(entity);
+        auto &material= view.get<Material>(entity);
 
-        // update
-        ColorUbo ubo{};
-        ubo.color = color.m_color;
-        
-        if (color.m_color != last_color){
-            material_index +=1;
+        if (material.material_descriptor == VK_NULL_HANDLE){
+            // write a descriptor in the pool
+            auto imageInfo = material.textures[0]->getImageInfo();
+            DescriptorWriter(*m_materialSetLayout, *m_objectPool)
+                .writeImage(1, &imageInfo)
+                .build(m_descriptorSets[material_index]);
+            material.material_descriptor = m_descriptorSets[material_index];
+            material_index++;
         }
 
-        m_uboBuffers[material_index]->writeToBuffer(&ubo);
-        m_uboBuffers[material_index]->flush();
-
+        // bind material descriptor set - at set #1
         vkCmdBindDescriptorSets(
                 frameInfo.commandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 m_pipelineLayout,
                 1,
                 1,
-                &m_descriptorSets[material_index],
+                &material.material_descriptor,
                 0,
                 nullptr);
     
@@ -186,10 +179,7 @@ void NewRenderSystem::renderEntities(
             mesh.model->bind(frameInfo.commandBuffer);
             // draw object
             mesh.model->draw(frameInfo.commandBuffer);
-        counter++;
     }
-    i= 1;
-    counter = 0;
 }
 
 } // namespace se
