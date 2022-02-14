@@ -99,7 +99,7 @@ void App::loadEntities(){
     material.textures.push_back(texture);
     m_materials[material.name] = material;
 
-    std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/smooth_vase.obj");
+    std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/cube.obj");
 
     for (int i{0}; i<10; ++i){
         for (int j{0}; j<10; ++j){
@@ -109,19 +109,27 @@ void App::loadEntities(){
             m_registry.emplace<Material>(entity, m_materials["TestMat"]);
             m_registry.emplace<TransformComponent>(entity, 
                 glm::vec3{-5+i*1.f, 0.f, -5+j*1.f},
-                glm::vec3{3.f},
+                glm::vec3{0.5f},
                 glm::vec3{0.f, 0.f, 0.f});
         }
     }
-    std::shared_ptr<Model> planeModel = Model::createModelFromFile(m_device, "../models/quad.obj");
+
+    Material material2;
+    texture = std::make_shared<Texture>(m_device, "../textures/dragon.png");
+    material2.name = std::string("Dragon");
+    material2.textures.push_back(texture);
+    m_materials[material2.name] = material2;
+
+
+    std::shared_ptr<Model> planeModel = Model::createModelFromFile(m_device, "../models/Dragon_wp4.obj");
 
     const auto entity = m_registry.create();
     m_registry.emplace<MeshComponent>(entity, planeModel);
-    m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 0.f, 0.f));
+    m_registry.emplace<Material>(entity, material2);
     m_registry.emplace<TransformComponent>(entity, 
-    glm::vec3{0.f, 0.f, 0.f},
-    glm::vec3{3.f},
-    glm::vec3{0.f, 0.f, 0.f});
+    glm::vec3{0.f, 0.05f, 0.f},
+    glm::vec3{2.f, -2.f, 2.f},
+    glm::vec3{0.f, 3.1415f, 0.f});
 }
 
 

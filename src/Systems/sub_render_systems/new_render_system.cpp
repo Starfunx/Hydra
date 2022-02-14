@@ -25,12 +25,6 @@ struct SimplePushConstantData {
 };
 
 
-struct ColorUbo
-{
-    glm::vec3 color{0.f, 0.f, 0.f};
-};
-
-
 NewRenderSystem::NewRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout):
 m_device{device}{
 
@@ -143,7 +137,7 @@ void NewRenderSystem::renderEntities(
             // write a descriptor in the pool
             auto imageInfo = material.textures[0]->getImageInfo();
             DescriptorWriter(*m_materialSetLayout, *m_objectPool)
-                .writeImage(1, &imageInfo)
+                .writeImage(0, &imageInfo)
                 .build(m_descriptorSets[material_index]);
             material.material_descriptor = m_descriptorSets[material_index];
             material_index++;

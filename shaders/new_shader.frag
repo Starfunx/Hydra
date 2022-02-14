@@ -3,6 +3,7 @@
 layout (location = 0) in vec3 fragColor;
 layout (location = 1) in vec3 fragPosWorld;
 layout (location = 2) in vec3 fragNormalWorld;
+layout (location = 3) in vec2 uv;
 
 layout (location = 0) out vec4 outColor;
 
@@ -14,7 +15,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
   vec4 lightColor; // w is intensity
 } global_ubo;
 
-layout(set = 1, binding = 1) uniform sampler2D texSampler;
+layout(set = 1, binding = 0) uniform sampler2D texSampler;
 
 layout (push_constant) uniform Push {
     mat4 modelMatrix;
@@ -30,6 +31,6 @@ void main(){
     vec3 ambientLight = global_ubo.ambientLightColor.xyz * global_ubo.ambientLightColor.w;
     vec3 diffuseLight = lightColor * max(dot(normalize(fragNormalWorld), normalize(directionToLight)), 0);
     
-
-    outColor = texture(texSampler, uv)*vec4((diffuseLight + ambientLight);
+    vec2 uv_reversed = vec2( uv.x, 1.0- uv.y);
+    outColor = texture(texSampler, uv_reversed)*vec4((diffuseLight + ambientLight), 1.0);
 }
