@@ -1,8 +1,6 @@
 #include "Texture.hpp"
 
-// libs
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "Ressources/Image.hpp"
 
 // std
 #include <stdexcept>
@@ -27,14 +25,16 @@ Texture::~Texture(){
 }
     
 void Texture::loadTexture(const std::string& filepath){
-    int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load(filepath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    
+    Image image{filepath};
+    // int texWidth, texHeight, texChannels;
+    // stbi_uc* pixels = stbi_load(filepath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
-    if (!pixels) {
-        throw std::runtime_error("unable to load image: "+ filepath);
-    }
+    // if (!pixels) {
+    //     throw std::runtime_error("unable to load image: "+ filepath);
+    // }
 
-    VkDeviceSize bufferSize = texWidth * texHeight * 4;
+    VkDeviceSize bufferSize = image.getWidth() * image.getHeight() * 4;
     uint32_t instanceCount = 1;
 
     // loading in staging buffer
@@ -47,16 +47,13 @@ void Texture::loadTexture(const std::string& filepath){
     };
 
     stagingBuffer.map();
-    stagingBuffer.writeToBuffer( (void*) pixels);
-
-    // unloading pixels from host
-    stbi_image_free(pixels);
+    stagingBuffer.writeToBuffer( (void*) image.getData());
 
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = texWidth;
-    imageInfo.extent.height = texHeight;
+    imageInfo.extent.width = image.getWidth();
+    imageInfo.extent.height = image.getHeight();
     imageInfo.extent.depth = 1;
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
@@ -78,8 +75,8 @@ void Texture::loadTexture(const std::string& filepath){
     m_device.copyBufferToImage(
         stagingBuffer.getBuffer(), 
         m_image,
-        static_cast<uint32_t>(texWidth),
-        static_cast<uint32_t>(texHeight),
+        static_cast<uint32_t>(image.getWidth()),
+        static_cast<uint32_t>(image.getHeight()),
         static_cast<uint32_t>(1));
     m_device.transitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }

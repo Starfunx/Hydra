@@ -16,8 +16,10 @@ set(SOURCES
     ${SRC_DIR}/main.cpp
     ${SRC_DIR}/app.cpp
 
-    ${SRC_DIR}/core/Window.cpp
-    ${SRC_DIR}/core/Input.cpp
+    ${SRC_DIR}/Core/Window.cpp
+    ${SRC_DIR}/Core/Input.cpp
+
+    ${SRC_DIR}/Ressources/Image.cpp
 
     ${SRC_DIR}/Renderer/Device.cpp
     ${SRC_DIR}/Renderer/Pipeline.cpp
