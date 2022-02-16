@@ -41,25 +41,6 @@ m_device{device}{
             .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();
 
-    // allocate buffers
-    // for (int i = 0; i < m_uboBuffers.size(); i++) {
-    // m_uboBuffers[i] = std::make_unique<Buffer>(
-    //     m_device,
-    //     sizeof(ColorUbo),
-    //     1,
-    //     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-    //     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    // m_uboBuffers[i]->map();
-    // }
-
-    // write descriptors with buffers
-    // auto imageInfo = texture.getImageInfo();
-    // for (int i = 0; i < m_descriptorSets.size(); i++) {
-    //     DescriptorWriter(*materialSetLayout, *m_objectPool)
-    //         .writeImage(1, &imageInfo)
-    //         .build(m_descriptorSets[i]);
-    // }
-
     createPipelineLayout(globalSetLayout, m_materialSetLayout->getDescriptorSetLayout());
     createPipeline(renderPass);
 }
@@ -124,8 +105,6 @@ void NewRenderSystem::renderEntities(
             0,
             nullptr);
 
-
-
     static int material_index{0};
     // for each object/Materials
     for(auto entity: view) {
@@ -143,6 +122,7 @@ void NewRenderSystem::renderEntities(
             material_index++;
         }
 
+        // TODO reduce binds calls by grouping objects by materials
         // bind material descriptor set - at set #1
         vkCmdBindDescriptorSets(
                 frameInfo.commandBuffer,
