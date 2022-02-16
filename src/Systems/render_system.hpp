@@ -5,9 +5,9 @@
 #include "Renderer/Renderer.hpp"
 #include "Renderer/DescriptorSet.hpp"
 
-#include "sub_render_systems/simple_render_system.hpp"
 #include "sub_render_systems/point_light_render_system.hpp"
 #include "sub_render_systems/new_render_system.hpp"
+#include "sub_render_systems/skybox_render_system.hpp"
 
 // libs
 #include <entt/entt.hpp>
@@ -36,7 +36,7 @@ namespace hyd
         std::unique_ptr<DescriptorPool> globalPool{};
 
         //subrenderSystems
-        std::unique_ptr<SimpleRenderSystem> m_renderSystem;
+        std::unique_ptr<SkyboxRenderSystem> m_skyboxRenderSystem;
         std::unique_ptr<PointLightRenderSystem> m_pointLightRenderSystem;
         std::unique_ptr<NewRenderSystem> m_new_render_system;
         

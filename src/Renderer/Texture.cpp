@@ -27,13 +27,6 @@ Texture::~Texture(){
 void Texture::loadTexture(const std::string& filepath){
     
     Image image{filepath};
-    // int texWidth, texHeight, texChannels;
-    // stbi_uc* pixels = stbi_load(filepath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
-    // if (!pixels) {
-    //     throw std::runtime_error("unable to load image: "+ filepath);
-    // }
-
     VkDeviceSize bufferSize = image.getWidth() * image.getHeight() * 4;
     uint32_t instanceCount = 1;
 

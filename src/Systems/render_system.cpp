@@ -36,6 +36,14 @@ RenderSytstem::RenderSytstem(Device& device, Renderer& renderer)
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
         .build();
 
+
+    // global descriptor sets
+    auto globalSetLayout =
+        DescriptorSetLayout::Builder(m_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
+
+    // create buffers
     for (int i = 0; i < m_uboBuffers.size(); i++) {
         m_uboBuffers[i] = std::make_unique<Buffer>(
             m_device,
@@ -46,12 +54,7 @@ RenderSytstem::RenderSytstem(Device& device, Renderer& renderer)
         m_uboBuffers[i]->map();
     }
 
-    // global descriptor sets
-    auto globalSetLayout =
-        DescriptorSetLayout::Builder(m_device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-            .build();
-
+    // write descriptors with buffers
     for (int i = 0; i < m_globalDescriptorSets.size(); i++) {
         auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
         DescriptorWriter(*globalSetLayout, *globalPool)
@@ -70,6 +73,11 @@ RenderSytstem::RenderSytstem(Device& device, Renderer& renderer)
         m_renderer.getSwapChainRenderPass(),
         globalSetLayout->getDescriptorSetLayout());
 
+    m_skyboxRenderSystem = std::make_unique<SkyboxRenderSystem>(
+        m_device,
+        m_renderer.getSwapChainRenderPass(),
+        globalSetLayout->getDescriptorSetLayout());
+
 }
 
 RenderSytstem::~RenderSytstem()
@@ -82,7 +90,8 @@ void RenderSytstem::renderEntities(const float frameTime, entt::registry& regist
     // get camera
     auto view = registry.view<TransformComponent, ViewerComponent>();
     Camera camera{};
-    camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
+    // camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
+    camera.setViewTarget(glm::vec3{1.f}, glm::vec3{0.f});
 
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
@@ -122,10 +131,12 @@ void RenderSytstem::renderEntities(const float frameTime, entt::registry& regist
 
         m_renderer.beginSwapChainRenderPass(commandBuffer);
         
+            m_skyboxRenderSystem->render(frameInfo);
             m_new_render_system->renderEntities(frameInfo, registry);
             
             // don't care about entities, just render the only point light in ubo
             m_pointLightRenderSystem->renderPointLightEntities(frameInfo, registry);
+            
         
         m_renderer.endSwapChainRenderPass(commandBuffer);
         
