@@ -92,7 +92,7 @@ void SkyboxRenderSystem::createPipeline(VkRenderPass renderPass){
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
-    pipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
+    pipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     m_pipeline = std::make_unique<Pipeline>(
         m_device,
         "../shaders/skybox.vert.spv",
@@ -128,7 +128,6 @@ void SkyboxRenderSystem::render(FrameInfo& frameInfo){
             0,
             nullptr);
     
-
     // bind obj model
     m_skybox_model->bind(frameInfo.commandBuffer);
     // draw object
