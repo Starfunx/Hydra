@@ -86,7 +86,7 @@ class Device
         VkDeviceMemory &imageMemory);
     
     VkImageView createImageView(VkImage image, VkFormat format);
-    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, int layerCount=1);
 
 
     VkPhysicalDeviceProperties properties;

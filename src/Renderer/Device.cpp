@@ -552,7 +552,7 @@ VkImageView Device::createImageView(VkImage image, VkFormat format){
     return imageView;
 }
 
-void Device::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void Device::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, int layerCount) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier{};
@@ -566,7 +566,7 @@ void Device::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.layerCount = layerCount;
 
     VkPipelineStageFlags sourceStage;
     VkPipelineStageFlags destinationStage;

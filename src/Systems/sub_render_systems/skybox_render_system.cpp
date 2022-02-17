@@ -204,21 +204,15 @@ void SkyboxRenderSystem::loadImage(){
         m_imageMemory);
 
 
-    VkImageSubresourceRange subresourceRange = {};
-		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		subresourceRange.baseMipLevel = 0;
-		subresourceRange.levelCount = 1;
-		subresourceRange.layerCount = 6;
-    // m_device.transitionImageLayout(subresourceRange, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-    m_device.transitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    m_device.transitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6);
     m_device.copyBufferToImage(
         stagingBuffer.getBuffer(), 
         m_image,
         static_cast<uint32_t>(width),
         static_cast<uint32_t>(height),
         static_cast<uint32_t>(6));
-    m_device.transitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    m_device.transitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 6);
 
 
     // create image view
