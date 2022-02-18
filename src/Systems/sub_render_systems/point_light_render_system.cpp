@@ -66,9 +66,7 @@ void PointLightRenderSystem::createPipeline(VkRenderPass renderPass){
 }
 
 
-void PointLightRenderSystem::renderPointLightEntities(
-     FrameInfo& frameInfo,
-     entt::registry& registry){
+void PointLightRenderSystem::renderPointLightEntities(FrameInfo& frameInfo){
     // auto view = registry.view<TransformComponent, MeshComponent, ColorComponent>();
 
     m_pipeline->bind(frameInfo.commandBuffer);

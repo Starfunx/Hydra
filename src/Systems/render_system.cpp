@@ -133,11 +133,7 @@ void RenderSytstem::renderEntities(const float frameTime, entt::registry& regist
         
             m_skyboxRenderSystem->render(frameInfo);
             m_new_render_system->renderEntities(frameInfo, registry);
-            
-            // don't care about entities, just render the only point light in ubo
-            m_pointLightRenderSystem->renderPointLightEntities(frameInfo, registry);
-            
-        
+            m_pointLightRenderSystem->renderPointLightEntities(frameInfo);
         m_renderer.endSwapChainRenderPass(commandBuffer);
         
         m_renderer.endFrame();

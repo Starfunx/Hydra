@@ -23,9 +23,7 @@ public:
     PointLightRenderSystem(const PointLightRenderSystem&) = delete;
     PointLightRenderSystem &operator=(const PointLightRenderSystem&) = delete;
 
-    void renderPointLightEntities(
-        FrameInfo& frameInfo,
-        entt::registry& registry);
+    void renderPointLightEntities(FrameInfo& frameInfo);
 private:
     void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
     void createPipeline(VkRenderPass renderPass);
