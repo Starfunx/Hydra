@@ -125,12 +125,30 @@ void RenderSytstem::renderEntities(const float frameTime, entt::registry& regist
 
         // RENDER
         
-        // beigin offscreen shadow pass
-        // render shadow vasting objects
-        // end offscreen shadow pass
-
+        // shadow pass
         m_renderer.beginSwapChainRenderPass(commandBuffer);
-        
+            // viewport = vks::initializers::viewport((float)offscreenPass.width, (float)offscreenPass.height, 0.0f, 1.0f);
+			// 	vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
+
+			// 	scissor = vks::initializers::rect2D(offscreenPass.width, offscreenPass.height, 0, 0);
+			// 	vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
+
+			// 	// Set depth bias (aka "Polygon offset")
+			// 	// Required to avoid shadow mapping artifacts
+			// 	vkCmdSetDepthBias(
+			// 		drawCmdBuffers[i],
+			// 		depthBiasConstant,
+			// 		0.0f,
+			// 		depthBiasSlope);
+
+			// 	vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.offscreen);
+			// 	vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets.offscreen, 0, nullptr);
+			// 	scenes[sceneIndex].draw(drawCmdBuffers[i]);
+
+        m_renderer.endSwapChainRenderPass(commandBuffer);
+
+        // render
+        m_renderer.beginSwapChainRenderPass(commandBuffer);        
             m_skyboxRenderSystem->render(frameInfo);
             m_new_render_system->renderEntities(frameInfo, registry);
             m_pointLightRenderSystem->renderPointLightEntities(frameInfo);
