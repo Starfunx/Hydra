@@ -109,7 +109,7 @@ void App::loadEntities(){
             m_registry.emplace<Material>(entity, m_materials["TestMat"]);
             m_registry.emplace<TransformComponent>(entity, 
                 glm::vec3{-5+i*1.f, 0.f, -5+j*1.f},
-                glm::vec3{0.5f},
+                glm::vec3{1.f},
                 glm::vec3{0.f, 0.f, 0.f});
         }
     }
