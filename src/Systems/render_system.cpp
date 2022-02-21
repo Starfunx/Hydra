@@ -20,7 +20,10 @@ struct GlobalUbo
 {
     glm::mat4 projection{1.f};
     glm::mat4 view{1.f};
-    glm::vec4 ambiantLightColor{1.f, 1.f, 0.5f, 0.1f}; // w is light intensity
+
+    glm::vec3 directionalLight{1.f, -3.f, -1.f};
+    alignas(16) glm::vec4 ambiantLightColor{1.f, 1.f, 0.5f, 0.1f}; // w is light intensity
+    
     glm::vec3 lightPosition{-1.f, -3.f, -1.f};
     alignas(16)glm::vec4 lightColor{1.f}; // w is light intensity
 };

@@ -10,10 +10,14 @@ layout (location = 0) out vec4 outColor;
 layout(set = 0, binding = 0) uniform GlobalUbo {
   mat4 projection;
   mat4 view;
+
+  vec3 directionalLightDirection; 
   vec4 ambientLightColor; // w is intensity
+  
   vec3 lightPosition;
   vec4 lightColor; // w is intensity
 } global_ubo;
+
 
 layout(set = 1, binding = 0) uniform sampler2D texSampler;
 
@@ -27,10 +31,17 @@ void main(){
     vec3 directionToLight = global_ubo.lightPosition - fragPosWorld;
     float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
 
-    vec3 lightColor = global_ubo.lightColor.xyz * global_ubo.lightColor.w * attenuation;
+    // ambiant
     vec3 ambientLight = global_ubo.ambientLightColor.xyz * global_ubo.ambientLightColor.w;
-    vec3 diffuseLight = lightColor * max(dot(normalize(fragNormalWorld), normalize(directionToLight)), 0);
     
+    // point light
+    // vec3 lightColor = global_ubo.lightColor.xyz * global_ubo.lightColor.w * attenuation;
+    // vec3 diffuseLight = lightColor * max(dot(normalize(fragNormalWorld), normalize(directionToLight)), 0);
+
+    vec3 directionalLightColor = {1.0, 1.0, 1.0};
+    vec3 normalWorldSpace = normalize(mat3(push.normalMatrix)*fragNormalWorld);
+    vec3 diffuseLight = directionalLightColor * max(dot(normalWorldSpace, global_ubo.directionalLightDirection), 0);
+
     vec2 uv_reversed = vec2( uv.x, 1.0- uv.y);
     outColor = texture(texSampler, uv_reversed)*vec4((diffuseLight + ambientLight), 1.0);
 }

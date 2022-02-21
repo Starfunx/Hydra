@@ -13,7 +13,10 @@ layout (location = 3) out vec2 uv_out;
 layout(set = 0, binding = 0) uniform GlobalUbo {
   mat4 projection;
   mat4 view;
+
+  vec3 directionalLightDirection; 
   vec4 ambientLightColor; // w is intensity
+  
   vec3 lightPosition;
   vec4 lightColor; // w is intensity
 } global_ubo;

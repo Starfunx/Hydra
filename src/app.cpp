@@ -128,8 +128,8 @@ void App::loadEntities(){
     m_registry.emplace<Material>(entity, material2);
     m_registry.emplace<TransformComponent>(entity, 
     glm::vec3{0.f, 0.05f, 0.f},
-    glm::vec3{1.f, -1.f, 1.f},
-    glm::vec3{0.f, 3.1415f, 0.f});
+    glm::vec3{1.f, 1.f, 1.f},
+    glm::vec3{0.f, 0.f, 0.f});
 }
 
 
