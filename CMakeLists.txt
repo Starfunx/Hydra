@@ -37,6 +37,7 @@ set(SOURCES
     ${SRC_DIR}/Systems/sub_render_systems/point_light_render_system.cpp
     ${SRC_DIR}/Systems/sub_render_systems/new_render_system.cpp
     ${SRC_DIR}/Systems/sub_render_systems/skybox_render_system.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/shadowMappingSystem.cpp
   )
 
 
