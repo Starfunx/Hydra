@@ -29,7 +29,7 @@ struct GlobalUbo
 };
 
 
-RenderSytstem::RenderSytstem(Device& device, Renderer& renderer)
+RenderSystem::RenderSystem(Device& device, Renderer& renderer)
 : m_device{device}, m_renderer{renderer}
 {
     // global descriptor pool
@@ -83,11 +83,11 @@ RenderSytstem::RenderSytstem(Device& device, Renderer& renderer)
 
 }
 
-RenderSytstem::~RenderSytstem()
+RenderSystem::~RenderSystem()
 {
 }
 
-void RenderSytstem::renderEntities(const float frameTime, entt::registry& registry)
+void RenderSystem::renderEntities(const float frameTime, entt::registry& registry)
 {
 
     // get camera

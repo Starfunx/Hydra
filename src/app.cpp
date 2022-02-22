@@ -41,7 +41,7 @@ App::~App(){}
 
 void App::run(){
 
-    RenderSytstem renderSystem{m_device, m_renderer};
+    RenderSystem renderSystem{m_device, m_renderer};
 
     ViewerControllerSystem viewerControllerSystem{};
     

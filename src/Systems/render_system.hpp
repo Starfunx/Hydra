@@ -17,14 +17,14 @@
 
 namespace hyd
 {
-    class RenderSytstem
+    class RenderSystem
     {
     public:
-        RenderSytstem(Device& device, Renderer& renderer);
-        ~RenderSytstem();
+        RenderSystem(Device& device, Renderer& renderer);
+        ~RenderSystem();
     
-        RenderSytstem (const RenderSytstem&) = delete;
-        RenderSytstem& operator=(const RenderSytstem&) = delete;
+        RenderSystem (const RenderSystem&) = delete;
+        RenderSystem& operator=(const RenderSystem&) = delete;
 
         void renderEntities(float frameTime, entt::registry& registry);
     private:
