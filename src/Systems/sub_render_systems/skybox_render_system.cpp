@@ -91,6 +91,7 @@ void SkyboxRenderSystem::createPipeline(VkRenderPass renderPass){
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     pipelineConfig.renderPass = renderPass;
+    pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     pipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     m_pipeline = std::make_unique<Pipeline>(
