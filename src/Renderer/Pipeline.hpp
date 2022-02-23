@@ -42,6 +42,11 @@ public:
         const std::string& vertFilepath,
         const std::string& fragFilepath,
         const PipelineConfigInfo& configInfo);
+   
+    Pipeline(
+        Device& device,
+        const std::string& vertFilepath,
+        const PipelineConfigInfo& configInfo);
 
     ~Pipeline();
 
@@ -58,6 +63,10 @@ private:
     void createGraphicspipeline(
         const std::string& vertFilepath, 
         const std::string& fragFilepath,
+        const PipelineConfigInfo& configInfo);
+        
+    void createGraphicspipeline(
+        const std::string& vertFilepath, 
         const PipelineConfigInfo& configInfo);
 
     void createShaderModule(
