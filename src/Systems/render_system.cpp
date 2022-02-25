@@ -83,7 +83,6 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer)
         
     m_shadow_mapping_system = std::make_unique<shadowMappingSystem>(
         m_device,
-        m_renderer.getSwapChainRenderPass(),
         globalSetLayout->getDescriptorSetLayout());
 
 }
@@ -134,9 +133,11 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
         // RENDER
         
         // shadow pass
-        m_renderer.beginSwapChainRenderPass(commandBuffer);
+        // m_renderer.beginSwapChainRenderPass(commandBuffer);
+        m_shadow_mapping_system->beginSwapChainRenderPass(commandBuffer);
             m_shadow_mapping_system->renderEntities(frameInfo, registry);
-        m_renderer.endSwapChainRenderPass(commandBuffer);
+        // m_renderer.endSwapChainRenderPass(commandBuffer);
+        m_shadow_mapping_system->endSwapChainRenderPass(commandBuffer);
 
         // render
         m_renderer.beginSwapChainRenderPass(commandBuffer);        

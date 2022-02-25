@@ -16,7 +16,8 @@ Pipeline::Pipeline(
     const std::string& vertFilepath,
     const std::string& fragFilepath,
     const PipelineConfigInfo& configInfo)
-    : m_device{device}
+    : m_device{device},
+      m_hasFragmentShader{true}
 {
     createGraphicspipeline(vertFilepath, fragFilepath, configInfo);
 }
@@ -25,14 +26,17 @@ Pipeline::Pipeline(
     Device& device,
     const std::string& vertFilepath,
     const PipelineConfigInfo& configInfo)
-    : m_device{device}
+    : m_device{device},
+      m_hasFragmentShader{false}
 {
     createGraphicspipeline(vertFilepath, configInfo);
 }
 
 Pipeline::~Pipeline(){
     vkDestroyShaderModule(m_device.device(), m_vertShaderModule, nullptr);
-    vkDestroyShaderModule(m_device.device(), m_fragShadermodule, nullptr);
+    if (m_hasFragmentShader)
+        vkDestroyShaderModule(m_device.device(), m_fragShadermodule, nullptr);
+
     vkDestroyPipeline(m_device.device(), m_graphicsPipeline, nullptr);
 }
 

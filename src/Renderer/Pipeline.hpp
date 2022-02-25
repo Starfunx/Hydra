@@ -77,6 +77,7 @@ private:
     VkPipeline m_graphicsPipeline;
     VkShaderModule m_vertShaderModule;
     VkShaderModule m_fragShadermodule;
+    bool m_hasFragmentShader{true};
 };
 
 
