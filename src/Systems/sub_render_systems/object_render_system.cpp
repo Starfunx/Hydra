@@ -1,4 +1,4 @@
-#include "new_render_system.hpp"
+#include "object_render_system.hpp"
 
 #include "Components/Color.hpp"
 #include "Components/Mesh.hpp"
@@ -25,7 +25,7 @@ struct SimplePushConstantData {
 };
 
 
-NewRenderSystem::NewRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout):
+ObjectRenderSystem::ObjectRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout):
 m_device{device}{
 
     m_objectPool = 
@@ -45,11 +45,11 @@ m_device{device}{
     createPipeline(renderPass);
 }
 
-NewRenderSystem::~NewRenderSystem(){
+ObjectRenderSystem::~ObjectRenderSystem(){
     vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
 }
 
-void NewRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout objectSetLayout) {
+void ObjectRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout objectSetLayout) {
 
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -71,7 +71,7 @@ void NewRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout
 
 }
 
-void NewRenderSystem::createPipeline(VkRenderPass renderPass){
+void ObjectRenderSystem::createPipeline(VkRenderPass renderPass){
     assert(m_pipelineLayout != nullptr && "cannot create pipeline before pipeline layout");
 
     PipelineConfigInfo pipelineConfig{};
@@ -86,7 +86,7 @@ void NewRenderSystem::createPipeline(VkRenderPass renderPass){
 }
 
 
-void NewRenderSystem::renderEntities(
+void ObjectRenderSystem::renderEntities(
      FrameInfo& frameInfo,
      entt::registry& registry){
     auto view = registry.view<TransformComponent, MeshComponent, Material>();

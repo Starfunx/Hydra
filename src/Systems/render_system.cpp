@@ -6,6 +6,7 @@
 
 #include "Components/Transform.hpp"
 #include "Components/Viewer.hpp"
+#include "Renderer/Texture.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -40,7 +41,7 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer)
         .build();
 
 
-    // global descriptor sets
+    // global descriptor set layout
     auto globalSetLayout =
         DescriptorSetLayout::Builder(m_device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -71,7 +72,7 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer)
         m_renderer.getSwapChainRenderPass(),
         globalSetLayout->getDescriptorSetLayout());
 
-    m_new_render_system = std::make_unique<NewRenderSystem>(
+    m_objectRenderSystem = std::make_unique<ObjectRenderSystem>(
         m_device,
         m_renderer.getSwapChainRenderPass(),
         globalSetLayout->getDescriptorSetLayout());
@@ -84,6 +85,10 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer)
     m_shadow_mapping_system = std::make_unique<shadowMappingSystem>(
         m_device,
         globalSetLayout->getDescriptorSetLayout());
+        
+    m_imageViewer = std::make_unique<ImageViewer>(
+        m_device,
+        m_renderer.getSwapChainRenderPass());
 
 }
 
@@ -131,9 +136,9 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
         m_uboBuffers[frameIndex]->flush();
 
         // RENDER
-        
+        static Texture texture(m_device, "../textures/sky.png");
         // shadow pass
-        // m_renderer.beginSwapChainRenderPass(commandBuffer);
+        // m_renderer.beginSwapChainRenderPass(commandBuffer); // check if thoses would work
         m_shadow_mapping_system->beginSwapChainRenderPass(commandBuffer);
             m_shadow_mapping_system->renderEntities(frameInfo, registry);
         // m_renderer.endSwapChainRenderPass(commandBuffer);
@@ -142,9 +147,26 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
         // render
         m_renderer.beginSwapChainRenderPass(commandBuffer);        
             m_skyboxRenderSystem->render(frameInfo);
-            m_new_render_system->renderEntities(frameInfo, registry);
+            m_objectRenderSystem->renderEntities(frameInfo, registry);
             m_pointLightRenderSystem->renderPointLightEntities(frameInfo);
+
+
+            VkExtent2D extent2d{500, 400};
+            VkViewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = static_cast<float>(extent2d.width);
+            viewport.height = static_cast<float>(extent2d.height);
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+            VkRect2D scissor{{0, 0}, extent2d};
+            vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+            vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+            m_imageViewer->renderImage(frameInfo, m_shadow_mapping_system->getImage());
+            // m_imageViewer->renderImage(frameInfo, texture.getImageInfo().imageView);
         m_renderer.endSwapChainRenderPass(commandBuffer);
+
         
         m_renderer.endFrame();
     }

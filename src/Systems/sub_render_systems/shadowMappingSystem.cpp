@@ -20,6 +20,19 @@
 namespace hyd
 {
 
+
+struct GlobalUbo
+{
+    glm::mat4 projection{1.f};
+    glm::mat4 view{1.f};
+
+    glm::vec3 directionalLight{1.f, -3.f, -1.f};
+    alignas(16) glm::vec4 ambiantLightColor{1.f, 1.f, 0.5f, 0.1f}; // w is light intensity
+    
+    glm::vec3 lightPosition{-1.f, -3.f, -1.f};
+    alignas(16)glm::vec4 lightColor{1.f}; // w is light intensity
+};
+
 struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f}; // projection * view * model
     glm::mat4 normalMatrix{1.f};
@@ -32,7 +45,7 @@ m_device{device}{
     m_objectPool = 
     DescriptorPool::Builder(m_device)
         .setMaxSets(1000) // large amount alocated
-        // .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
         .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         .build();
 
@@ -41,6 +54,26 @@ m_device{device}{
         DescriptorSetLayout::Builder(m_device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();
+
+    auto globalSetLayout2 =
+        DescriptorSetLayout::Builder(m_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
+
+    // create buffers
+    m_uboBuffer = std::make_unique<Buffer>(
+        m_device,
+        sizeof(GlobalUbo),
+        1,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    m_uboBuffer->map();
+
+    // write descriptors with buffers
+    auto bufferInfo = m_uboBuffer->descriptorInfo();
+    DescriptorWriter(*globalSetLayout2, *m_objectPool)
+        .writeBuffer(0, &bufferInfo)
+        .build(m_globalDescriptor);
 
     createImage();
     createRenderPass();
@@ -88,7 +121,7 @@ void shadowMappingSystem::createPipeline(VkRenderPass renderPass){
 
     
     pipelineConfig.colorBlendInfo.attachmentCount = 0;
-    pipelineConfig.dynamicStateEnables.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+    // pipelineConfig.dynamicStateEnables.push_back();
 
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
@@ -108,6 +141,13 @@ void shadowMappingSystem::renderEntities(
     // bind pipline
     m_pipeline->bind(m_shadow_map_cmd_buf);
 
+
+    GlobalUbo ubo{};
+    ubo.projection = glm::perspective(glm::radians(1.0f), 1.0f, 0.01f, 100.0f);
+    ubo.view = glm::lookAt(glm::vec3(1.0f, 2.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0, 1, 0));
+    m_uboBuffer->writeToBuffer(&ubo);
+    m_uboBuffer->flush();
+
     // bind global descriptor set - at set #0
     vkCmdBindDescriptorSets(
             m_shadow_map_cmd_buf,
@@ -115,7 +155,7 @@ void shadowMappingSystem::renderEntities(
             m_pipelineLayout,
             0,
             1,
-            &frameInfo.globalDescriptorSet,
+            &m_globalDescriptor,
             0,
             nullptr);
 

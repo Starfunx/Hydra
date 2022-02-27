@@ -28,9 +28,12 @@ public:
     shadowMappingSystem(const shadowMappingSystem&) = delete;
     shadowMappingSystem &operator=(const shadowMappingSystem&) = delete;
 
+
     void renderEntities(
         FrameInfo& frameInfo,
         entt::registry& registry);
+
+    VkImageView getImage() {return m_shadow_map_view;}
 
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
     void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
@@ -66,6 +69,9 @@ private:
     VkAttachmentReference m_depth_ref;
     VkSubpassDescription m_subpass[1];
     VkRenderPassCreateInfo m_rp_info;
+
+    std::unique_ptr<Buffer> m_uboBuffer;
+    VkDescriptorSet m_globalDescriptor;
 
 };
 

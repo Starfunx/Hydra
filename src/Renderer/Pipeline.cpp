@@ -178,7 +178,6 @@ void Pipeline::createGraphicspipeline(
     if (vkCreateGraphicsPipelines(m_device.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline");
     }
-
 }
 
 

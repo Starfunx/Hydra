@@ -17,14 +17,14 @@
 namespace hyd
 {
     
-class NewRenderSystem
+class ObjectRenderSystem
 {
 public:
-    NewRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-    ~NewRenderSystem();
+    ObjectRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+    ~ObjectRenderSystem();
 
-    NewRenderSystem(const NewRenderSystem&) = delete;
-    NewRenderSystem &operator=(const NewRenderSystem&) = delete;
+    ObjectRenderSystem(const ObjectRenderSystem&) = delete;
+    ObjectRenderSystem &operator=(const ObjectRenderSystem&) = delete;
 
     void renderEntities(
         FrameInfo& frameInfo,
