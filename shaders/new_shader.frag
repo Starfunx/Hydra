@@ -40,7 +40,7 @@ void main(){
 
     vec3 directionalLightColor = {1.0, 1.0, 1.0};
     vec3 normalWorldSpace = normalize(mat3(push.normalMatrix)*fragNormalWorld);
-    vec3 diffuseLight = directionalLightColor * max(dot(normalWorldSpace, global_ubo.directionalLightDirection), 0);
+    vec3 diffuseLight = directionalLightColor * max(dot(normalWorldSpace, -global_ubo.directionalLightDirection), 0);
 
     vec2 uv_reversed = vec2( uv.x, 1.0- uv.y);
     outColor = texture(texSampler, uv_reversed)*vec4((diffuseLight + ambientLight), 1.0);

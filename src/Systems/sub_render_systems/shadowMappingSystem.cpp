@@ -26,7 +26,7 @@ struct GlobalUbo
     glm::mat4 projection{1.f};
     glm::mat4 view{1.f};
 
-    glm::vec3 directionalLight{1.f, -3.f, -1.f};
+    glm::vec3 directionalLight{1.f, 1.f, -2.f};
     alignas(16) glm::vec4 ambiantLightColor{1.f, 1.f, 0.5f, 0.1f}; // w is light intensity
     
     glm::vec3 lightPosition{-1.f, -3.f, -1.f};
@@ -156,8 +156,8 @@ void shadowMappingSystem::renderEntities(
 
 
     GlobalUbo ubo{};
-    ubo.projection = glm::perspective(glm::radians(1.0f), 1.0f, 0.01f, 100.0f);
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0, 0, 1));
+    ubo.projection = glm::ortho<float>(-10,10,-10,10,-5,20);
+    ubo.view = glm::lookAt(ubo.directionalLight, glm::vec3(0,0,0), glm::vec3(0,0,1));
     m_uboBuffer->writeToBuffer(&ubo);
     m_uboBuffer->flush();
 
@@ -169,7 +169,7 @@ void shadowMappingSystem::renderEntities(
             0,
             1,
             // &m_globalDescriptor,
-            &frameInfo.globalDescriptorSet,
+            &m_globalDescriptor,
             0,
             nullptr);
 
