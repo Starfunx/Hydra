@@ -79,4 +79,10 @@ void Camera::setViewYXZ(glm::vec3 position, glm::vec3 rotation) {
   m_viewMatrix[3][2] = -glm::dot(w, position);
 }
 
+void Camera::setViewQuat(glm::vec3 position, glm::quat orientation) {
+  m_viewMatrix = glm::mat4{1.f};
+  m_viewMatrix *= glm::toMat4(-orientation);
+  m_viewMatrix *= glm::translate(glm::mat4{1.f}, -position);
+}
+
 }  // namespace lve

@@ -18,10 +18,13 @@ namespace hyd
             int moveBackward = key::S;
             int moveUp = key::Space;
             int moveDown = key::LeftShift;
+
             int lookLeft = key::Left;
             int lookRight = key::Right;
             int lookUp = key::Up;
             int lookDown = key::Down;
+            int rollLeft = key::Q;
+            int rollRight = key::E;
         };
 
         void moveInPlaneXZ(float dt, entt::registry& registry);

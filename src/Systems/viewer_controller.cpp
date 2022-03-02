@@ -20,32 +20,35 @@ void ViewerControllerSystem::moveInPlaneXZ(float dt, entt::registry& registry){
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
 
+
+        glm::quat orientation = transform.orientation;
+
         glm::vec3 rotate{0};
-        if (Input::IsKeyPressed(keys.lookRight)) rotate.y += 1.f;
-        if (Input::IsKeyPressed(keys.lookLeft)) rotate.y -= 1.f;
-        if (Input::IsKeyPressed(keys.lookUp)) rotate.x += 1.f;
-        if (Input::IsKeyPressed(keys.lookDown)) rotate.x -= 1.f;
+        if (Input::IsKeyPressed(keys.lookLeft)) rotate.z += 1.f;// yaw
+        if (Input::IsKeyPressed(keys.lookRight)) rotate.z -= 1.f;  
+        if (Input::IsKeyPressed(keys.lookUp)) rotate.x -= 1.f;  // pitch
+        if (Input::IsKeyPressed(keys.lookDown)) rotate.x += 1.f;
+        if (Input::IsKeyPressed(keys.rollLeft)) rotate.y += 1.f;// roll
+        if (Input::IsKeyPressed(keys.rollRight)) rotate.y -= 1.f; 
 
-        if(glm::length(rotate) > std::numeric_limits<float>::epsilon()){
-            transform.rotation += lookSpeed * dt * glm::normalize(rotate);
-        }
+        glm::quat rotYaw {glm::angleAxis(glm::degrees(rotate.z/(float)3e3), glm::vec3(0.0f,1.0f,0.0f))};
+        glm::quat rotPitch {glm::angleAxis(glm::degrees(rotate.x/(float)3e3), glm::vec3(1.0f,0.0f,0.0f))};
+        glm::quat rotRoll {glm::angleAxis(glm::degrees(rotate.y/(float)3e3), glm::vec3(0.0f,0.0f,1.0f))};
 
-        //limit pitch between +-85degrees
-        transform.rotation.x = glm::clamp(transform.rotation.x, -1.5f, 1.5f);
-        transform.rotation.y = glm::mod(transform.rotation.y, glm::two_pi<float>());
+        orientation = rotRoll * rotPitch * rotYaw * orientation;
+        transform.orientation = glm::normalize(orientation);
 
-        float yaw = transform.rotation.y;
-        const glm::vec3 forwardDir{sin(yaw), 0.f, cos(yaw)};
-        const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
-        const glm::vec3 updDir{0.f, -1.f, 0.f};
+        glm::vec3 cameraFront {glm::conjugate(orientation) * glm::vec3 (0.0f, 0.0f, -1.0f)};
+        glm::vec3 cameraUp {glm::conjugate(orientation) * glm::vec3 (0.0f, 1.0f, 0.0f)};
+        glm::vec3 cameraRight {glm::conjugate(orientation) * glm::vec3 (-1.0f, 0.0f, 0.0f)};
 
         glm::vec3 moveDir{0};
-        if (Input::IsKeyPressed(keys.moveForward)) moveDir += forwardDir;
-        if (Input::IsKeyPressed(keys.moveBackward)) moveDir -= forwardDir;
-        if (Input::IsKeyPressed(keys.moveLeft)) moveDir -= rightDir;
-        if (Input::IsKeyPressed(keys.moveRight)) moveDir += rightDir;
-        if (Input::IsKeyPressed(keys.moveUp)) moveDir += updDir;
-        if (Input::IsKeyPressed(keys.moveDown)) moveDir -= updDir;
+        if (Input::IsKeyPressed(keys.moveForward)) moveDir -= cameraFront;
+        if (Input::IsKeyPressed(keys.moveBackward)) moveDir += cameraFront;
+        if (Input::IsKeyPressed(keys.moveLeft)) moveDir += cameraRight;
+        if (Input::IsKeyPressed(keys.moveRight)) moveDir -= cameraRight;
+        if (Input::IsKeyPressed(keys.moveUp)) moveDir -= cameraUp;
+        if (Input::IsKeyPressed(keys.moveDown)) moveDir += cameraUp;
 
         if(glm::length(moveDir) > std::numeric_limits<float>::epsilon()){
             transform.translation += moveSpeed * dt * glm::normalize(moveDir);

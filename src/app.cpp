@@ -48,7 +48,7 @@ void App::run(){
     const auto viewer_entity = m_registry.create();
     m_registry.emplace<ViewerComponent>(viewer_entity);
     m_registry.emplace<TransformComponent>(viewer_entity, 
-        glm::vec3{0.f, -2.f, -2.5f},
+        glm::vec3{2.f, 2.f, +2.5f},
         glm::vec3{0.5f, 0.5f, 0.5f},
         glm::vec3{0.f, 0.f, 0.f});
 
@@ -108,7 +108,7 @@ void App::loadEntities(){
             m_registry.emplace<ColorComponent>(entity, glm::vec3(1.f, 1.f-0.1f*i, 0.2f+0.1f*j));
             m_registry.emplace<Material>(entity, m_materials["TestMat"]);
             m_registry.emplace<TransformComponent>(entity, 
-                glm::vec3{-5+i*1.f, 0.f, -5+j*1.f},
+                glm::vec3{-5+i*1.f, -5+j*1.f, 0.f},
                 glm::vec3{1.f},
                 glm::vec3{0.f, 0.f, 0.f});
         }
@@ -127,7 +127,7 @@ void App::loadEntities(){
     m_registry.emplace<MeshComponent>(entity, planeModel);
     m_registry.emplace<Material>(entity, material2);
     m_registry.emplace<TransformComponent>(entity, 
-    glm::vec3{0.f, 0.05f, 0.f},
+    glm::vec3{0.f, 0.f, 0.5f},
     glm::vec3{1.f, 1.f, 1.f},
     glm::vec3{0.f, 0.f, 0.f});
 }

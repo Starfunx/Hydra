@@ -13,6 +13,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp> // two_pi
+#include <glm/gtx/quaternion.hpp>
 
 namespace hyd
 {
@@ -22,7 +23,7 @@ struct GlobalUbo
     glm::mat4 projection{1.f};
     glm::mat4 view{1.f};
 
-    glm::vec3 directionalLight{1.f, -3.f, -1.f};
+    glm::vec3 directionalLight{1.f, -1.f, 3.f};
     alignas(16) glm::vec4 ambiantLightColor{1.f, 1.f, 0.5f, 0.1f}; // w is light intensity
     
     glm::vec3 lightPosition{-1.f, -3.f, -1.f};
@@ -103,11 +104,13 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
     auto view = registry.view<TransformComponent, ViewerComponent>();
     Camera camera{};
     // camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
-    camera.setViewTarget(glm::vec3{1.f}, glm::vec3{0.f});
+    camera.setViewTarget(glm::vec3{4.f}, glm::vec3{0.f});
 
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
-        camera.setViewYXZ(transform.translation, transform.rotation);
+        // camera.setViewYXZ(transform.translation, glm::vec3(-glm::half_pi<float>(), 0.0f, 0.0f));
+        // camera.setViewYXZ(transform.translation, glm::vec3(-glm::half_pi<float>(), 0.0f, 0.0f));
+        camera.setViewQuat(transform.translation, transform.orientation);
     }
 
 
@@ -163,7 +166,7 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
             vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
             vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-            m_imageViewer->renderImage(frameInfo, m_shadow_mapping_system->getImage());
+            // m_imageViewer->renderImage(frameInfo, m_shadow_mapping_system->getImage());
             // m_imageViewer->renderImage(frameInfo, texture.getImageInfo().imageView);
         m_renderer.endSwapChainRenderPass(commandBuffer);
 
