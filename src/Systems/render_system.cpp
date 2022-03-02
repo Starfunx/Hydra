@@ -139,7 +139,6 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
         m_uboBuffers[frameIndex]->flush();
 
         // RENDER
-        static Texture texture(m_device, "../textures/sky.png");
         // shadow pass
         // m_renderer.beginSwapChainRenderPass(commandBuffer); // check if thoses would work
         m_shadow_mapping_system->beginSwapChainRenderPass(commandBuffer);
@@ -167,7 +166,6 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
             vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
             // m_imageViewer->renderImage(frameInfo, m_shadow_mapping_system->getImage());
-            // m_imageViewer->renderImage(frameInfo, texture.getImageInfo().imageView);
         m_renderer.endSwapChainRenderPass(commandBuffer);
 
         

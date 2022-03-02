@@ -70,6 +70,7 @@ m_device{device}{
 }
 
 ImageViewer::~ImageViewer(){
+    vkDestroySampler(m_device.device(), m_sampler, nullptr);
     vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
 }
 
@@ -94,6 +95,8 @@ void ImageViewer::createPipeline(VkRenderPass renderPass){
 
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+    pipelineConfig.attributeDescriptions = {};
+    pipelineConfig.bindingDescriptions = {};
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;

@@ -83,12 +83,14 @@ m_device{device}{
 }
 
 shadowMappingSystem::~shadowMappingSystem(){
+    vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
+    
     vkDestroyRenderPass(m_device.device(), m_renderPass, nullptr);
+    vkDestroyFramebuffer(m_device.device(), m_shadow_map_fb, nullptr);
+    vkDestroyImageView(m_device.device(), m_shadow_map_view, nullptr);
     vkDestroyImage(m_device.device(), m_image, nullptr);
     vkFreeMemory(m_device.device(), m_memory, nullptr);
-    vkDestroyImageView(m_device.device(), m_shadow_map_view, nullptr);
-    vkDestroyFramebuffer(m_device.device(), m_shadow_map_fb, nullptr);
-    vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
+
 }
 
 void shadowMappingSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout objectSetLayout) {
@@ -122,7 +124,17 @@ void shadowMappingSystem::createPipeline(VkRenderPass renderPass){
     
     pipelineConfig.colorBlendInfo.attachmentCount = 0;
     // pipelineConfig.dynamicStateEnables.push_back();
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+    //                              {location, binding, format, offset}
+    attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0});
+    pipelineConfig.attributeDescriptions = attributeDescriptions;
+    
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+    bindingDescriptions[0].binding = 0;    
+    bindingDescriptions[0].stride = sizeof(glm::vec3);    
+    bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
+    pipelineConfig.bindingDescriptions = bindingDescriptions;
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     m_pipeline = std::make_unique<Pipeline>(

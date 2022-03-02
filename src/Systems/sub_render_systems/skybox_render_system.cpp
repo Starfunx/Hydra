@@ -62,7 +62,6 @@ SkyboxRenderSystem::~SkyboxRenderSystem(){
 
     vkDestroySampler(m_device.device(), m_sampler, nullptr);
     vkDestroyImageView(m_device.device(), m_imageView, nullptr);
-
     vkDestroyImage(m_device.device(), m_image, nullptr);
     vkFreeMemory(m_device.device(), m_imageMemory, nullptr);
 
