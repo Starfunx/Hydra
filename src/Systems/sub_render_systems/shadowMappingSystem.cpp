@@ -124,6 +124,7 @@ void shadowMappingSystem::createPipeline(VkRenderPass renderPass){
     
     pipelineConfig.colorBlendInfo.attachmentCount = 0;
     // pipelineConfig.dynamicStateEnables.push_back();
+
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
     //                              {location, binding, format, offset}
     attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0});
@@ -131,10 +132,10 @@ void shadowMappingSystem::createPipeline(VkRenderPass renderPass){
     
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
     bindingDescriptions[0].binding = 0;    
-    bindingDescriptions[0].stride = sizeof(glm::vec3);    
+    bindingDescriptions[0].stride = sizeof(Model::Vertex);    
     bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
     pipelineConfig.bindingDescriptions = bindingDescriptions;
+
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     m_pipeline = std::make_unique<Pipeline>(
