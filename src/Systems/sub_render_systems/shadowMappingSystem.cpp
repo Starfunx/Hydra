@@ -156,7 +156,7 @@ void shadowMappingSystem::renderEntities(
 
     GlobalUbo ubo{};
     ubo.projection = glm::perspective(glm::radians(1.0f), 1.0f, 0.01f, 100.0f);
-    ubo.view = glm::lookAt(glm::vec3(1.0f, 2.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0, 1, 0));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0, 0, 1));
     m_uboBuffer->writeToBuffer(&ubo);
     m_uboBuffer->flush();
 
@@ -167,7 +167,8 @@ void shadowMappingSystem::renderEntities(
             m_pipelineLayout,
             0,
             1,
-            &m_globalDescriptor,
+            // &m_globalDescriptor,
+            &frameInfo.globalDescriptorSet,
             0,
             nullptr);
 

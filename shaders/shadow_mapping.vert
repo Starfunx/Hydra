@@ -27,6 +27,6 @@ layout (push_constant) uniform Push {
 void main()
 {
 	// mat4 depthMVP = push.modelMatrix * global_ubo.view * global_ubo.projection;
-	mat4 depthMVP = push.modelMatrix * global_ubo.view * global_ubo.projection;
+	mat4 depthMVP = global_ubo.projection * global_ubo.view * push.modelMatrix;
 	gl_Position = depthMVP * vec4(inPos, 1.0);
 }
