@@ -27,7 +27,7 @@ namespace hyd
 App* App::s_Instance = nullptr;
 
 App::App():
-    m_window{800, 600, "Hydra"}
+    m_window{WIDTH, HEIGHT, "Hydra"}
 {
     assert(!s_Instance && "App already exists!");
     s_Instance = this;

@@ -24,8 +24,8 @@ public:
     App(/* args */);
     ~App();
     
-    static constexpr int WIDTH = 800;
-    static constexpr int HEIGHT = 600;
+    static constexpr int WIDTH = 1080;
+    static constexpr int HEIGHT = 720;
 
 
     void run();

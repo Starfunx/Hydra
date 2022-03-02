@@ -157,9 +157,13 @@ void shadowMappingSystem::renderEntities(
 
     GlobalUbo ubo{};
     ubo.projection = glm::ortho<float>(-10,10,-10,10,-5,20);
-    ubo.view = glm::lookAt(ubo.directionalLight, glm::vec3(0,0,0), glm::vec3(0,0,1));
+    ubo.view = glm::lookAt(-ubo.directionalLight, glm::vec3(0,0,0), glm::vec3(0,0,1));
     m_uboBuffer->writeToBuffer(&ubo);
     m_uboBuffer->flush();
+
+    // Matrix from light's point of view
+    glm::mat4 depthModelMatrix = glm::mat4(1.0f);
+    m_depthMVP = ubo.projection * ubo.view * depthModelMatrix;
 
     // bind global descriptor set - at set #0
     vkCmdBindDescriptorSets(

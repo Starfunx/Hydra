@@ -4,6 +4,7 @@
 #include "Components/Mesh.hpp"
 #include "Components/Transform.hpp"
 #include "Components/Material.hpp"
+#include "Components/Viewer.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -19,19 +20,38 @@
 namespace hyd
 {
 
+struct GlobalUbo
+{
+    glm::mat4 projection{1.f};
+    glm::mat4 view{1.f};
+
+    glm::mat4 lightMVP{1.f};
+    glm::vec3 directionalLight{1.f, 1.f, -2.f};
+    alignas(16) glm::vec4 ambiantLightColor{1.f, 1.f, 0.5f, 0.1f}; // w is light intensity
+    
+    glm::vec3 lightPosition{0.f, 0.f, 0.f};
+    alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
+};
 struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f}; // projection * view * model
     glm::mat4 normalMatrix{1.f};
 };
 
 
-ObjectRenderSystem::ObjectRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout):
+ObjectRenderSystem::ObjectRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout, VkImageView imageView):
 m_device{device}{
+
+    m_globalPool =
+    DescriptorPool::Builder(m_device)
+        .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .build();
 
     m_objectPool = 
     DescriptorPool::Builder(m_device)
         .setMaxSets(1000) // large amount alocated
-        // .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
         .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         .build();
 
@@ -40,6 +60,60 @@ m_device{device}{
         DescriptorSetLayout::Builder(m_device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();
+
+    // global descriptor set layout
+    m_globalSetLayout =
+        DescriptorSetLayout::Builder(m_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
+
+
+    // create buffers
+    for (int i = 0; i < m_uboBuffers.size(); i++) {
+        m_uboBuffers[i] = std::make_unique<Buffer>(
+            m_device,
+            sizeof(GlobalUbo),
+            1,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        m_uboBuffers[i]->map();
+    }
+
+    // Create sampler to sample from to depth attachment
+    // Used to sample in the fragment shader for shadowed rendering
+    VkFilter shadowmap_filter = VK_FILTER_NEAREST;
+    VkSamplerCreateInfo samplerCI {};
+    samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerCI.maxAnisotropy = 1.0f;
+    samplerCI.magFilter = shadowmap_filter;
+    samplerCI.minFilter = shadowmap_filter;
+    samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerCI.addressModeV = samplerCI.addressModeU;
+    samplerCI.addressModeW = samplerCI.addressModeU;
+    samplerCI.mipLodBias = 0.0f;
+    samplerCI.maxAnisotropy = 1.0f;
+    samplerCI.minLod = 0.0f;
+    samplerCI.maxLod = 1.0f;
+    samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    vkCreateSampler(m_device.device(), &samplerCI, nullptr, &m_sampler);
+
+
+    // Image descriptor for the shadow map attachment
+    VkDescriptorImageInfo descriptorImageInfo {};
+    descriptorImageInfo.sampler = m_sampler;
+    descriptorImageInfo.imageView = imageView;
+    descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+    // write descriptors with buffers
+    for (int i = 0; i < m_globalDescriptorSets.size(); i++) {
+        auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
+        DescriptorWriter(*m_globalSetLayout, *m_globalPool)
+            .writeBuffer(0, &bufferInfo)
+            .writeImage(1, &descriptorImageInfo)
+            .build(m_globalDescriptorSets[i]);
+    }
 
     createPipelineLayout(globalSetLayout, m_materialSetLayout->getDescriptorSetLayout());
     createPipeline(renderPass);
@@ -56,7 +130,7 @@ void ObjectRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLay
     pushConstantRange.offset = 0;
     pushConstantRange.size = sizeof(SimplePushConstantData);
 
-  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout, objectSetLayout};
+  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{m_globalSetLayout->getDescriptorSetLayout(), objectSetLayout};
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -88,20 +162,42 @@ void ObjectRenderSystem::createPipeline(VkRenderPass renderPass){
 
 void ObjectRenderSystem::renderEntities(
      FrameInfo& frameInfo,
-     entt::registry& registry){
+     entt::registry& registry,
+     const glm::mat4& lightDepthMVP,
+     VkImageView imageView,
+     float aspectRatio){
+
+    // get camera
+    Camera camera;
+    auto viewcam = registry.view<TransformComponent, ViewerComponent>();
+    for(auto entity: viewcam) {
+        auto &transform = viewcam.get<TransformComponent>(entity);
+        camera.setViewQuat(transform.translation, transform.orientation);
+    }
+    // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
+    camera.setPerspectiveProjection(glm::radians(50.f), aspectRatio, 0.1f, 100.f);
+
     auto view = registry.view<TransformComponent, MeshComponent, Material>();
 
     // bind pipline
     m_pipeline->bind(frameInfo.commandBuffer);
 
+
     // bind global descriptor set - at set #0
+    GlobalUbo ubo{};
+    ubo.projection = camera.getProjection();
+    ubo.view = camera.getView();
+    ubo.lightMVP = lightDepthMVP;
+    m_uboBuffers[frameInfo.FrameIndex]->writeToBuffer(&ubo);
+    m_uboBuffers[frameInfo.FrameIndex]->flush();
+
     vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             m_pipelineLayout,
             0,
             1,
-            &frameInfo.globalDescriptorSet,
+            &m_globalDescriptorSets[frameInfo.FrameIndex],
             0,
             nullptr);
 

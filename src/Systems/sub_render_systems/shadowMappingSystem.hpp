@@ -34,6 +34,7 @@ public:
         entt::registry& registry);
 
     VkImageView getImage() {return m_shadow_map_view;}
+    glm::mat4 getdepthMVP() {return m_depthMVP;}
 
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
     void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
@@ -72,6 +73,8 @@ private:
 
     std::unique_ptr<Buffer> m_uboBuffer;
     VkDescriptorSet m_globalDescriptor;
+
+    glm::mat4 m_depthMVP{1.f};
 
 };
 

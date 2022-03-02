@@ -23,11 +23,12 @@ struct GlobalUbo
     glm::mat4 projection{1.f};
     glm::mat4 view{1.f};
 
+    glm::mat4 lightMVP{1.f};
     glm::vec3 directionalLight{1.f, 1.f, -2.f};
     alignas(16) glm::vec4 ambiantLightColor{1.f, 1.f, 0.5f, 0.1f}; // w is light intensity
     
-    glm::vec3 lightPosition{-1.f, -3.f, -1.f};
-    alignas(16)glm::vec4 lightColor{1.f}; // w is light intensity
+    glm::vec3 lightPosition{0.f, 0.f, 0.f};
+    alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
 };
 
 
@@ -73,19 +74,20 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer)
         m_renderer.getSwapChainRenderPass(),
         globalSetLayout->getDescriptorSetLayout());
 
-    m_objectRenderSystem = std::make_unique<ObjectRenderSystem>(
-        m_device,
-        m_renderer.getSwapChainRenderPass(),
-        globalSetLayout->getDescriptorSetLayout());
-
     m_skyboxRenderSystem = std::make_unique<SkyboxRenderSystem>(
         m_device,
         m_renderer.getSwapChainRenderPass(),
         globalSetLayout->getDescriptorSetLayout());
         
     m_shadow_mapping_system = std::make_unique<shadowMappingSystem>(
+    m_device,
+    globalSetLayout->getDescriptorSetLayout());
+
+    m_objectRenderSystem = std::make_unique<ObjectRenderSystem>(
         m_device,
-        globalSetLayout->getDescriptorSetLayout());
+        m_renderer.getSwapChainRenderPass(),
+        globalSetLayout->getDescriptorSetLayout(),
+        m_shadow_mapping_system->getImage());
         
     m_imageViewer = std::make_unique<ImageViewer>(
         m_device,
@@ -135,6 +137,7 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
         GlobalUbo ubo{};
         ubo.projection = camera.getProjection();
         ubo.view = camera.getView();
+        ubo.lightMVP = m_shadow_mapping_system->getdepthMVP();
         m_uboBuffers[frameIndex]->writeToBuffer(&ubo);
         m_uboBuffers[frameIndex]->flush();
 
@@ -149,11 +152,11 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
         // render
         m_renderer.beginSwapChainRenderPass(commandBuffer);        
             m_skyboxRenderSystem->render(frameInfo);
-            m_objectRenderSystem->renderEntities(frameInfo, registry);
+            m_objectRenderSystem->renderEntities(frameInfo, registry, m_shadow_mapping_system->getdepthMVP(), m_shadow_mapping_system->getImage(), m_renderer.getAspectRatio());
             m_pointLightRenderSystem->renderPointLightEntities(frameInfo);
 
 
-            VkExtent2D extent2d{500, 400};
+            VkExtent2D extent2d{400, 400};
             VkViewport viewport{};
             viewport.x = 0.0f;
             viewport.y = 0.0f;
