@@ -4,6 +4,17 @@
 #include "Events/Event.hpp"
 #include "Events/ApplicationEvent.hpp"
 
+#include "Renderer/Renderer.hpp"
+#include "Components/Material.hpp"
+
+//libs
+#include <entt/entt.hpp>
+
+// std
+#include <memory>
+#include <vector>
+#include <unordered_map>
+
 namespace hyd
 {
     
@@ -13,6 +24,10 @@ public:
     App(/* args */);
     ~App();
     
+    static constexpr int WIDTH = 1080;
+    static constexpr int HEIGHT = 720;
+
+
     void run();
 
     void onEvent(Event& e);
@@ -23,12 +38,20 @@ public:
 private:
     bool OnWindowClose(WindowCloseEvent& e);
     bool OnWindowResize(WindowResizeEvent& e);
+
+    void loadEntities();
+
     /* data */
     Window m_window;
 
     bool m_shouldEnd{false};
-
     static App* s_Instance;
+
+    Device m_device{m_window};
+    Renderer m_renderer{m_window, m_device};
+
+    entt::registry m_registry;
+    std::unordered_map<std::string, Material> m_materials;
 };
 
 } // namespace hyd

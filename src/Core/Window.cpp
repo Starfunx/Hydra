@@ -142,8 +142,15 @@ void Window::initWindow(){
 
 }
 
+
+void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface){
+    if (glfwCreateWindowSurface(instance, m_window, nullptr, surface) != VK_SUCCESS){
+        throw std::runtime_error("failed to create window surface");
+    }
+}
+
 void Window::errorCallback(int error, const char* description){
-    std::string strerror = "glfwError" + error;
+    std::string strerror = "glfwError"; // + error;
     strerror += description;
     throw std::runtime_error(strerror);
 }

@@ -3,6 +3,7 @@
 #include "Events/Event.hpp"
 
 // libs
+#include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 // std
@@ -32,8 +33,12 @@ public:
         }
     }
 
+
     void SetEventCallback(const std::function<void(Event&)>& callback){  m_data.eventCallback = callback; };
 
+    void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+    VkExtent2D getExtent() { return {static_cast<uint32_t>(m_data.width), static_cast<uint32_t>(m_data.height)}; }
+        
 
 private:
     static void errorCallback(int error, const char* description);

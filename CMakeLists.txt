@@ -16,9 +16,29 @@ set(SOURCES
     ${SRC_DIR}/main.cpp
     ${SRC_DIR}/app.cpp
 
-    ${SRC_DIR}/core/Window.cpp
-    ${SRC_DIR}/core/Input.cpp
+    ${SRC_DIR}/Core/Window.cpp
+    ${SRC_DIR}/Core/Input.cpp
 
+    ${SRC_DIR}/Ressources/Image.cpp
+
+    ${SRC_DIR}/Renderer/Device.cpp
+    ${SRC_DIR}/Renderer/Pipeline.cpp
+    ${SRC_DIR}/Renderer/SwapChain.cpp
+    ${SRC_DIR}/Renderer/Model.cpp
+    ${SRC_DIR}/Renderer/Renderer.cpp
+    ${SRC_DIR}/Renderer/Camera.cpp
+    ${SRC_DIR}/Renderer/Buffer.cpp
+    ${SRC_DIR}/Renderer/DescriptorSet.cpp
+    ${SRC_DIR}/Renderer/Texture.cpp
+
+    ${SRC_DIR}/Systems/viewer_controller.cpp
+    
+    ${SRC_DIR}/Systems/render_system.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/point_light_render_system.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/object_render_system.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/skybox_render_system.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/shadowMappingSystem.cpp
+    ${SRC_DIR}/Systems/sub_render_systems/imageViewer.cpp
   )
 
 
@@ -34,38 +54,46 @@ target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
     # -Werror             # treat warnings as errors
 )
 
-# #########################################################
-# #VULKAN SDK
-# # set(VULKAN_SDK_PATH "C:/VulkanSDK/1.2.170.0")
-# # set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-# # set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+##########################################################
+#VULKAN SDK
+# set(VULKAN_SDK_PATH "C:/VulkanSDK/1.2.170.0")
+# set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
+# set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
 
-# find_package(Vulkan REQUIRED)
-# target_link_libraries(${CMAKE_PROJECT_NAME} Vulkan::Vulkan)
+find_package(Vulkan REQUIRED)
+target_link_libraries(${CMAKE_PROJECT_NAME} Vulkan::Vulkan)
 
 #########################################################
 #GLFW
+
 set(GLFW_PATH "${PROJECT_SOURCE_DIR}/vendor/glfw-3.3.5")
 set(GLFW_INCLUDE_DIRS "${GLFW_PATH}/include")
 set(GLFW_LIB "${GLFW_PATH}/lib-mingw-w64")
-
 
 add_subdirectory(${GLFW_PATH})
 include_directories(${GLFW_INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 
-# ###########################################################
-# # GLM
+###########################################################
+# GLM
+add_subdirectory(${VENDOR_DIR}/glm)
+target_link_libraries(${CMAKE_PROJECT_NAME} glm)
 
-# add_subdirectory(${VENDOR_DIR}/glm)
-# target_link_libraries(${CMAKE_PROJECT_NAME} glm)
+###########################################################
+# TinyObj
+include_directories(${VENDOR_DIR}/tinyobj)
 
-# ###########################################################
-# # TinyObj
+#############################################################
+# Entt
+target_include_directories(${CMAKE_PROJECT_NAME}
+    PUBLIC 
+        ${VENDOR_DIR}/entt/src/
+)
+#############################################################
+#stb
+include_directories(${VENDOR_DIR}/stb)
 
-# include_directories(${VENDOR_DIR}/tinyobj)
-
-# ############################################################
+#############################################################
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     # ${PROJECT_BINARY_DIR} # for cmaked configured headers
