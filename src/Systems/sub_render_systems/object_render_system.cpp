@@ -80,35 +80,43 @@ m_device{device}{
         m_uboBuffers[i]->map();
     }
 
-    // Create sampler to sample from to depth attachment
-    // Used to sample in the fragment shader for shadowed rendering
-    VkFilter shadowmap_filter = VK_FILTER_NEAREST;
-    VkSamplerCreateInfo samplerCI {};
-    samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerCI.maxAnisotropy = 1.0f;
-    samplerCI.magFilter = shadowmap_filter;
-    samplerCI.minFilter = shadowmap_filter;
-    samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerCI.addressModeV = samplerCI.addressModeU;
-    samplerCI.addressModeW = samplerCI.addressModeU;
-    samplerCI.mipLodBias = 0.0f;
-    samplerCI.maxAnisotropy = 1.0f;
-    samplerCI.minLod = 0.0f;
-    samplerCI.maxLod = 1.0f;
-    samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    vkCreateSampler(m_device.device(), &samplerCI, nullptr, &m_sampler);
-
+    for (int i = 0; i < m_sampler.size(); i++)
+    {
+        // Create sampler to sample from to depth attachment
+        // Used to sample in the fragment shader for shadowed rendering
+        VkFilter shadowmap_filter = VK_FILTER_NEAREST;
+        VkSamplerCreateInfo samplerCI {};
+        samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCI.maxAnisotropy = 1.0f;
+        samplerCI.magFilter = shadowmap_filter;
+        samplerCI.minFilter = shadowmap_filter;
+        samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCI.addressModeV = samplerCI.addressModeU;
+        samplerCI.addressModeW = samplerCI.addressModeU;
+        samplerCI.mipLodBias = 0.0f;
+        samplerCI.maxAnisotropy = 1.0f;
+        samplerCI.minLod = 0.0f;
+        samplerCI.maxLod = 1.0f;
+        samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+        vkCreateSampler(m_device.device(), &samplerCI, nullptr, &m_sampler[i]);
+    }
 
     // Image descriptor for the shadow map attachment
-    VkDescriptorImageInfo descriptorImageInfo {};
-    descriptorImageInfo.sampler = m_sampler;
-    descriptorImageInfo.imageView = imageView;
-    descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    for (int i = 0; i < m_descriptorImageInfo.size(); i++)
+    {
+
+
+    m_descriptorImageInfo[i].sampler = m_sampler[i];
+    m_descriptorImageInfo[i].imageView = imageView;
+    m_descriptorImageInfo[i].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    }
+    
 
     // write descriptors with buffers
     for (int i = 0; i < m_globalDescriptorSets.size(); i++) {
         auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
+        auto descriptorImageInfo = m_descriptorImageInfo[i];
         DescriptorWriter(*m_globalSetLayout, *m_globalPool)
             .writeBuffer(0, &bufferInfo)
             .writeImage(1, &descriptorImageInfo)
@@ -120,6 +128,8 @@ m_device{device}{
 }
 
 ObjectRenderSystem::~ObjectRenderSystem(){
+    for (int i = 0; i < m_sampler.size(); i++)
+        vkDestroySampler(m_device.device(), m_sampler[i], nullptr);
     vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
 }
 

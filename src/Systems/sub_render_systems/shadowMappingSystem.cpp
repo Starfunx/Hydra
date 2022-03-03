@@ -286,7 +286,7 @@ void shadowMappingSystem::createRenderPass()
    m_attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
    m_attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
    m_attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-   m_attachments[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+   m_attachments[0].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
    m_attachments[0].flags = 0;
  
    // Attachment references from subpasses

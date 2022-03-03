@@ -117,7 +117,7 @@ void ImageViewer::renderImage(
 
 
     // update desctiptor;;
-    m_imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    m_imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
     m_imageInfo.imageView = imageView;
     m_imageInfo.sampler = m_sampler;
 

@@ -53,7 +53,9 @@ private:
     std::vector<VkDescriptorSet> m_globalDescriptorSets = std::vector<VkDescriptorSet>(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
     std::vector<std::unique_ptr<Buffer>> m_uboBuffers = std::vector<std::unique_ptr<Buffer>>(SwapChain::MAX_FRAMES_IN_FLIGHT);
-    VkSampler m_sampler;
+   
+    std::vector<VkDescriptorImageInfo> m_descriptorImageInfo = std::vector<VkDescriptorImageInfo>(SwapChain::MAX_FRAMES_IN_FLIGHT);
+    std::vector<VkSampler> m_sampler = std::vector<VkSampler>(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
 };
 
