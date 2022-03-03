@@ -130,6 +130,12 @@ void shadowMappingSystem::createPipeline(VkRenderPass renderPass){
     attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0});
     pipelineConfig.attributeDescriptions = attributeDescriptions;
     
+    // pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
+    // pipelineConfig.rasterizationInfo.depthBiasEnable = VK_TRUE;
+    
+    // pipelineConfig.dynamicStateEnables.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+
+
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
     bindingDescriptions[0].binding = 0;    
     bindingDescriptions[0].stride = sizeof(Model::Vertex);    
@@ -151,12 +157,20 @@ void shadowMappingSystem::renderEntities(
     auto view = registry.view<TransformComponent, MeshComponent, Material>();
 
 
+    // Set depth bias (aka "Polygon offset")
+    // Required to avoid shadow mapping artifacts
+    // vkCmdSetDepthBias(
+    //     m_shadow_map_cmd_buf,
+    //     1.25f,
+    //     0.0f,
+    //     1.75f);
+
     // bind pipline
     m_pipeline->bind(m_shadow_map_cmd_buf);
 
 
     GlobalUbo ubo{};
-    ubo.projection = glm::ortho<float>(-10,10,-10,10,-5,20);
+    ubo.projection = glm::ortho<float>(-10,10,-10,10,-5,10);
     ubo.view = glm::lookAt(-ubo.directionalLight, glm::vec3(0,0,0), glm::vec3(0,0,1));
     m_uboBuffer->writeToBuffer(&ubo);
     m_uboBuffer->flush();

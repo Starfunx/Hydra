@@ -87,7 +87,8 @@ void main(){
     vec3 diffuseLight = directionalLightColor * max(dot(normalWorldSpace, -global_ubo.directionalLightDirection), 0);
 
     vec2 uv_reversed = vec2( uv.x, 1.0- uv.y);
-    vec4 diffuse = texture(texSampler, uv_reversed)*vec4((diffuseLight + ambientLight), 1.0);
+    vec4 color = texture(texSampler, uv_reversed)*vec4((diffuseLight + ambientLight), 1.0);
+    vec4 ambiantColor = texture(texSampler, uv_reversed)*vec4(ambientLight, 1.0);
 
-    outColor = vec4(diffuse.xyz * shadow, 1.0);
+    outColor = vec4(color.xyz * shadow + ambiantColor.xyz*(1-shadow), 1.0);
 }

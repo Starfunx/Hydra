@@ -167,8 +167,8 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
             VkRect2D scissor{{0, 0}, extent2d};
             vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
             vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+            // m_imageViewer->renderImage(frameInfo, m_shadow_mapping_system->getImage());
 
-            m_imageViewer->renderImage(frameInfo, m_shadow_mapping_system->getImage());
         m_renderer.endSwapChainRenderPass(commandBuffer);
 
         
