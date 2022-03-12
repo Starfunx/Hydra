@@ -1,9 +1,7 @@
 #include "shadowMappingSystem.hpp"
 
-#include "Components/Color.hpp"
-#include "Components/Mesh.hpp"
 #include "Components/Transform.hpp"
-#include "Components/Material.hpp"
+#include "Components/Renderable.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -154,7 +152,7 @@ void shadowMappingSystem::createPipeline(VkRenderPass renderPass){
 void shadowMappingSystem::renderEntities(
      FrameInfo& frameInfo,
      entt::registry& registry){
-    auto view = registry.view<TransformComponent, MeshComponent, Material>();
+    auto view = registry.view<TransformComponent, RenderableComponent>();
 
 
     // Set depth bias (aka "Polygon offset")
@@ -195,16 +193,24 @@ void shadowMappingSystem::renderEntities(
     // for each object/Materials
     for(auto entity: view) {
         auto &transform = view.get<TransformComponent>(entity);
-        auto &mesh = view.get<MeshComponent>(entity);
-        auto &material= view.get<Material>(entity);
+        auto &renderable = view.get<RenderableComponent>(entity);
 
-        if (material.material_descriptor == VK_NULL_HANDLE){
+// struct Material
+// {
+//     /* data */
+//     std::vector<std::shared_ptr<Texture>> m_textures;
+//     VkDescriptorSet m_descriptor;
+// };
+        if (renderable.material == nullptr)
+            continue; // don't treat a unfinished material
+
+        if (renderable.material->m_descriptor == VK_NULL_HANDLE){
             // write a descriptor in the pool
-            auto imageInfo = material.textures[0]->getImageInfo();
+            auto imageInfo = renderable.material->m_textures[0]->getImageInfo();
             DescriptorWriter(*m_materialSetLayout, *m_objectPool)
                 .writeImage(0, &imageInfo)
                 .build(m_descriptorSets[material_index]);
-            material.material_descriptor = m_descriptorSets[material_index];
+            renderable.material->m_descriptor = m_descriptorSets[material_index];
             material_index++;
         }
 
@@ -216,7 +222,7 @@ void shadowMappingSystem::renderEntities(
                 m_pipelineLayout,
                 1,
                 1,
-                &material.material_descriptor,
+                &renderable.material->m_descriptor,
                 0,
                 nullptr);
     
@@ -236,9 +242,9 @@ void shadowMappingSystem::renderEntities(
                 &push);
 
             // bind obj model
-            mesh.model->bind(m_shadow_map_cmd_buf);
+            renderable.model->bind(m_shadow_map_cmd_buf);
             // draw object
-            mesh.model->draw(m_shadow_map_cmd_buf);
+            renderable.model->draw(m_shadow_map_cmd_buf);
     }
 }
 

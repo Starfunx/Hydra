@@ -5,7 +5,6 @@
 #include "Events/ApplicationEvent.hpp"
 
 #include "Renderer/Renderer.hpp"
-#include "Components/Material.hpp"
 
 //libs
 #include <entt/entt.hpp>
@@ -51,7 +50,6 @@ private:
     Renderer m_renderer{m_window, m_device};
 
     entt::registry m_registry;
-    std::unordered_map<std::string, Material> m_materials;
 };
 
 } // namespace hyd
