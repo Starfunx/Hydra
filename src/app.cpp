@@ -85,7 +85,11 @@ bool App::OnWindowResize(WindowResizeEvent& e){
 
 void App::loadEntities(){
 
-   
+   // camera 
+   {
+       const auto entity = m_registry.create();
+       auto& camera = m_registry.emplace<CameraComponent>(entity);
+   }
 
 
 }
