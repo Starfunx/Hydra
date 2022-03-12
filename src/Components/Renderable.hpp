@@ -4,6 +4,7 @@ The transform component gives an object a position and orientation in space!
 #pragma once
 
 #include "Renderer/Model.hpp"
+#include "Renderer/Material.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -14,11 +15,11 @@ The transform component gives an object a position and orientation in space!
 namespace hyd
 {
     
-struct MeshComponent
+struct RenderableComponent
 {
-   std::shared_ptr<Model> model {};
+   std::shared_ptr<Model> model {nullptr};
+   std::shared_ptr<Material> material {nullptr};
 };
-
 
 } // namespace hyd
 
