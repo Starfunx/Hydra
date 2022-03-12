@@ -85,12 +85,32 @@ bool App::OnWindowResize(WindowResizeEvent& e){
 
 void App::loadEntities(){
 
-   // camera 
-   {
+    // camera 
+    {
        const auto entity = m_registry.create();
        auto& camera = m_registry.emplace<CameraComponent>(entity);
-   }
+    }
 
+    // cubes
+    {
+        // create material
+        std::shared_ptr<Material> material = std::make_shared<Material>();
+        material->m_textures.push_back(std::make_shared<Texture>(m_device, "../textures/dirt.jpg"));
+        
+        // create mesh
+        std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/cube.obj");
+
+        for(int i{-5}; i<4; ++i)
+        {  
+            const auto entity = m_registry.create();
+            auto& pos = m_registry.emplace<TransformComponent>(entity);
+            pos.translation = glm::vec3{0.f, i*1.f, 0.f};
+            auto& renderable = m_registry.emplace<RenderableComponent>(entity);
+            renderable.material = material;
+            renderable.model = model;
+        }
+
+    }
 
 }
 

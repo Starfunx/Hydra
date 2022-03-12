@@ -189,7 +189,6 @@ void ObjectRenderSystem::renderEntities(
     }
 
 
-    auto renderable_view = registry.view<TransformComponent, RenderableComponent>();
 
     // bind pipline
     m_pipeline->bind(frameInfo.commandBuffer);
@@ -210,13 +209,15 @@ void ObjectRenderSystem::renderEntities(
             0,
             nullptr);
 
+    auto renderable_view = registry.view<TransformComponent, RenderableComponent>();
+    
     static int material_index{0};
     // for each object/Materials
     for(auto entity: renderable_view) {
         auto &transform  = renderable_view.get<TransformComponent>(entity);
         auto &renderable = renderable_view.get<RenderableComponent>(entity);
 
-        if (renderable.material == nullptr)
+        if (renderable.material == nullptr || renderable.model == nullptr)
             continue;
 
         if (renderable.material->m_descriptor == VK_NULL_HANDLE){

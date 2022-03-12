@@ -195,14 +195,8 @@ void shadowMappingSystem::renderEntities(
         auto &transform = view.get<TransformComponent>(entity);
         auto &renderable = view.get<RenderableComponent>(entity);
 
-// struct Material
-// {
-//     /* data */
-//     std::vector<std::shared_ptr<Texture>> m_textures;
-//     VkDescriptorSet m_descriptor;
-// };
-        if (renderable.material == nullptr)
-            continue; // don't treat a unfinished material
+        if (renderable.material == nullptr || renderable.model == nullptr)
+            continue; // don't treat a undefined renderable
 
         if (renderable.material->m_descriptor == VK_NULL_HANDLE){
             // write a descriptor in the pool
