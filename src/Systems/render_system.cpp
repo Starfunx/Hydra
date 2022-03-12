@@ -3,10 +3,10 @@
 #include "Renderer/SwapChain.hpp"
 
 #include "Renderer/Buffer.hpp"
+#include "Renderer/Texture.hpp"
 
 #include "Components/Transform.hpp"
-#include "Components/Viewer.hpp"
-#include "Renderer/Texture.hpp"
+#include "Components/Camera.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -102,23 +102,20 @@ RenderSystem::~RenderSystem()
 void RenderSystem::renderEntities(const float frameTime, entt::registry& registry)
 {
 
+    GlobalUbo ubo{};
     // get camera
-    auto view = registry.view<TransformComponent, ViewerComponent>();
-    Camera camera{};
-    // camera.setViewDirection(glm::vec3{0.f}, glm::vec3{0.0f, 0.f, 1.f});
-    camera.setViewTarget(glm::vec3{4.f}, glm::vec3{0.f});
+    auto camera_view = registry.view<CameraComponent>();
 
-    for(auto entity: view) {
-        auto &transform = view.get<TransformComponent>(entity);
-        // camera.setViewYXZ(transform.translation, glm::vec3(-glm::half_pi<float>(), 0.0f, 0.0f));
-        // camera.setViewYXZ(transform.translation, glm::vec3(-glm::half_pi<float>(), 0.0f, 0.0f));
-        camera.setViewQuat(transform.translation, transform.orientation);
+    for(auto entity: camera_view) {
+        auto& camera = camera_view.get<CameraComponent>(entity).camera;
+        float aspect = m_renderer.getAspectRatio();
+        camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
+
+        ubo.projection = camera.getProjection();
+        ubo.view = camera.getView();
     }
 
 
-    float aspect = m_renderer.getAspectRatio();
-    // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
-    camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
 
     if (auto commandBuffer = m_renderer.beginFrame()){
@@ -128,15 +125,11 @@ void RenderSystem::renderEntities(const float frameTime, entt::registry& registr
             frameIndex,
             frameTime,
             commandBuffer,
-            camera,
             m_globalDescriptorSets[frameIndex]};
 
 
 
         // update
-        GlobalUbo ubo{};
-        ubo.projection = camera.getProjection();
-        ubo.view = camera.getView();
         ubo.lightMVP = m_shadow_mapping_system->getdepthMVP();
         m_uboBuffers[frameIndex]->writeToBuffer(&ubo);
         m_uboBuffers[frameIndex]->flush();

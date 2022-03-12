@@ -2,10 +2,8 @@
 
 #include "Ressources/Image.hpp"
 
-#include "Components/Color.hpp"
-#include "Components/Mesh.hpp"
 #include "Components/Transform.hpp"
-#include "Components/Material.hpp"
+#include "Components/Renderable.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS

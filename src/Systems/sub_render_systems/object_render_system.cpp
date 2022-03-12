@@ -1,10 +1,8 @@
 #include "object_render_system.hpp"
 
-#include "Components/Color.hpp"
-#include "Components/Mesh.hpp"
+#include "Components/Camera.hpp"
 #include "Components/Transform.hpp"
-#include "Components/Material.hpp"
-#include "Components/Viewer.hpp"
+#include "Components/Renderable.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -177,26 +175,26 @@ void ObjectRenderSystem::renderEntities(
      VkImageView imageView,
      float aspectRatio){
 
+    GlobalUbo ubo{};
     // get camera
-    Camera camera;
-    auto viewcam = registry.view<TransformComponent, ViewerComponent>();
-    for(auto entity: viewcam) {
-        auto &transform = viewcam.get<TransformComponent>(entity);
-        camera.setViewQuat(transform.translation, transform.orientation);
-    }
-    // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
-    camera.setPerspectiveProjection(glm::radians(50.f), aspectRatio, 0.1f, 100.f);
+    auto camera_view = registry.view<CameraComponent>();
 
-    auto view = registry.view<TransformComponent, MeshComponent, Material>();
+    for(auto entity: camera_view) {
+        auto& camera = camera_view.get<CameraComponent>(entity).camera;
+        float aspect = aspectRatio;
+        camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
+
+        ubo.projection = camera.getProjection();
+        ubo.view = camera.getView();
+    }
+
+
 
     // bind pipline
     m_pipeline->bind(frameInfo.commandBuffer);
 
 
     // bind global descriptor set - at set #0
-    GlobalUbo ubo{};
-    ubo.projection = camera.getProjection();
-    ubo.view = camera.getView();
     ubo.lightMVP = lightDepthMVP;
     m_uboBuffers[frameInfo.FrameIndex]->writeToBuffer(&ubo);
     m_uboBuffers[frameInfo.FrameIndex]->flush();
@@ -211,20 +209,24 @@ void ObjectRenderSystem::renderEntities(
             0,
             nullptr);
 
+    auto renderable_view = registry.view<TransformComponent, RenderableComponent>();
+    
     static int material_index{0};
     // for each object/Materials
-    for(auto entity: view) {
-        auto &transform = view.get<TransformComponent>(entity);
-        auto &mesh = view.get<MeshComponent>(entity);
-        auto &material= view.get<Material>(entity);
+    for(auto entity: renderable_view) {
+        auto &transform  = renderable_view.get<TransformComponent>(entity);
+        auto &renderable = renderable_view.get<RenderableComponent>(entity);
 
-        if (material.material_descriptor == VK_NULL_HANDLE){
+        if (renderable.material == nullptr || renderable.model == nullptr)
+            continue;
+
+        if (renderable.material->m_descriptor == VK_NULL_HANDLE){
             // write a descriptor in the pool
-            auto imageInfo = material.textures[0]->getImageInfo();
+            auto imageInfo = renderable.material->m_textures[0]->getImageInfo();
             DescriptorWriter(*m_materialSetLayout, *m_objectPool)
                 .writeImage(0, &imageInfo)
                 .build(m_descriptorSets[material_index]);
-            material.material_descriptor = m_descriptorSets[material_index];
+            renderable.material->m_descriptor = m_descriptorSets[material_index];
             material_index++;
         }
 
@@ -236,7 +238,7 @@ void ObjectRenderSystem::renderEntities(
                 m_pipelineLayout,
                 1,
                 1,
-                &material.material_descriptor,
+                &renderable.material->m_descriptor,
                 0,
                 nullptr);
     
@@ -256,9 +258,9 @@ void ObjectRenderSystem::renderEntities(
                 &push);
 
             // bind obj model
-            mesh.model->bind(frameInfo.commandBuffer);
+            renderable.model->bind(frameInfo.commandBuffer);
             // draw object
-            mesh.model->draw(frameInfo.commandBuffer);
+            renderable.model->draw(frameInfo.commandBuffer);
     }
 }
 

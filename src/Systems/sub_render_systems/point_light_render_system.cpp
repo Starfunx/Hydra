@@ -1,9 +1,5 @@
 #include "point_light_render_system.hpp"
 
-#include "Components/Color.hpp"
-#include "Components/Mesh.hpp"
-#include "Components/Transform.hpp"
-
 //libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

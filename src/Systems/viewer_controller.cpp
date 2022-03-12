@@ -1,7 +1,6 @@
 #include "viewer_controller.hpp"
 
-#include "Components/Transform.hpp"
-#include "Components/Viewer.hpp"
+#include "Components/Camera.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -15,13 +14,12 @@ namespace hyd
 
 void ViewerControllerSystem::moveInPlaneXZ(float dt, entt::registry& registry){
 
-    auto view = registry.view<TransformComponent, ViewerComponent>();
+   auto camera_view = registry.view<CameraComponent>();
 
-    for(auto entity: view) {
-        auto &transform = view.get<TransformComponent>(entity);
+    for(auto entity: camera_view) {
+        auto& camera = camera_view.get<CameraComponent>(entity);
 
-
-        glm::quat orientation = transform.orientation;
+        glm::quat orientation = camera.orientation;
 
         glm::vec3 rotate{0};
         if (Input::IsKeyPressed(keys.lookLeft)) rotate.z += 1.f;// yaw
@@ -36,7 +34,7 @@ void ViewerControllerSystem::moveInPlaneXZ(float dt, entt::registry& registry){
         glm::quat rotRoll {glm::angleAxis(glm::degrees(rotate.y/(float)3e3), glm::vec3(0.0f,0.0f,1.0f))};
 
         orientation = rotRoll * rotPitch * rotYaw * orientation;
-        transform.orientation = glm::normalize(orientation);
+        camera.orientation = glm::normalize(orientation);
 
         glm::vec3 cameraFront {glm::conjugate(orientation) * glm::vec3 (0.0f, 0.0f, -1.0f)};
         glm::vec3 cameraUp {glm::conjugate(orientation) * glm::vec3 (0.0f, 1.0f, 0.0f)};
@@ -51,10 +49,12 @@ void ViewerControllerSystem::moveInPlaneXZ(float dt, entt::registry& registry){
         if (Input::IsKeyPressed(keys.moveDown)) moveDir += cameraUp;
 
         if(glm::length(moveDir) > std::numeric_limits<float>::epsilon()){
-            transform.translation += moveSpeed * dt * glm::normalize(moveDir);
+            camera.position += moveSpeed * dt * glm::normalize(moveDir);
         }
-    }
 
+        // update camera matrices
+        camera.camera.setViewQuat(camera.position, camera.orientation);
+    }
 }
 
     
