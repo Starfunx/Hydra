@@ -100,4 +100,101 @@ class DescriptorWriter {
   std::vector<VkWriteDescriptorSet> writes;
 };
 
+/*New more centralized allocator*/
+
+class DescriptorAllocator
+{
+public:
+
+    struct PoolSizes {
+        std::vector<std::pair<VkDescriptorType,float>> sizes =
+        {
+            { VK_DESCRIPTOR_TYPE_SAMPLER, 0.5f },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f },
+            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 4.f },
+            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1.f },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1.f },
+            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1.f },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2.f },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2.f },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1.f },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1.f },
+            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 0.5f }
+        };
+    };
+
+    DescriptorAllocator(Device& device);
+    ~DescriptorAllocator();
+
+    DescriptorAllocator(const DescriptorAllocator&) = delete;
+    DescriptorAllocator operator=(const DescriptorAllocator&) = delete;
+
+    bool allocate(VkDescriptorSet* set, VkDescriptorSetLayout layout);
+    void reset_pools();
+
+private:
+    VkDescriptorPool grab_pool();
+
+    /* data */
+    Device& m_device;
+
+    VkDescriptorPool currentPool{VK_NULL_HANDLE};
+    PoolSizes descriptorSizes;
+
+    std::vector<VkDescriptorPool> m_freePools;
+    std::vector<VkDescriptorPool> m_usedPools;
+
+friend class DescriptorBuilder;
+
+};
+
+
+class DescriptorLayoutCache {
+public:
+    DescriptorLayoutCache(Device& device);
+    ~DescriptorLayoutCache();
+
+    VkDescriptorSetLayout create_descriptor_layout(VkDescriptorSetLayoutCreateInfo* info);
+
+    struct DescriptorLayoutInfo {
+        bool operator==(const DescriptorLayoutInfo& other) const;
+        size_t hash() const;
+
+        //good idea to turn this into a inlined array
+        std::vector<VkDescriptorSetLayoutBinding> bindings;
+    };
+
+private:
+    struct DescriptorLayoutHash
+    {
+        std::size_t operator()(const DescriptorLayoutInfo& k) const
+        {
+            return k.hash();
+        }
+    };
+
+    std::unordered_map<DescriptorLayoutInfo, VkDescriptorSetLayout, DescriptorLayoutHash> m_layoutCache;
+    Device& m_device;
+};
+
+
+class DescriptorBuilder {
+public:
+
+    DescriptorBuilder(DescriptorLayoutCache& layoutCache, DescriptorAllocator& allocator );
+    DescriptorBuilder& bind_buffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo, VkDescriptorType type, VkShaderStageFlags stageFlags);
+    DescriptorBuilder& bind_image(uint32_t binding, VkDescriptorImageInfo* imageInfo, VkDescriptorType type, VkShaderStageFlags stageFlags);
+
+    bool build(VkDescriptorSet& set, VkDescriptorSetLayout& layout);
+    bool build(VkDescriptorSet& set);
+private:
+    
+    std::vector<VkWriteDescriptorSet> m_writes;
+    std::vector<VkDescriptorSetLayoutBinding> m_bindings;
+
+    DescriptorLayoutCache& m_cache;
+    DescriptorAllocator& m_alloc;
+
+};
+
 }  // namespace hyd

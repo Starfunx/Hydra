@@ -93,21 +93,37 @@ void App::loadEntities(){
 
     // cubes
     {
+
+
         // create material
         std::shared_ptr<Material> material = std::make_shared<Material>();
-        material->m_textures.push_back(std::make_shared<Texture>(m_device, "../textures/dirt.jpg"));
-        
+
+            // create Texture
+            auto texture = std::make_shared<Texture>(m_device, "../textures/dirt.jpg");
+            material->m_textures.push_back(texture);
+
+            // allocate descriptor
+            auto descriptor_image_info = material->m_textures[0]->getImageInfo();
+            DescriptorBuilder(cache, alloc)
+                .bind_image(0, &descriptor_image_info, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .build(material->m_descriptor);
+
+
+
         // create mesh
         std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/cube.obj");
 
         for(int i{-5}; i<4; ++i)
         {  
-            const auto entity = m_registry.create();
-            auto& pos = m_registry.emplace<TransformComponent>(entity);
-            pos.translation = glm::vec3{0.f, i*1.f, 0.f};
-            auto& renderable = m_registry.emplace<RenderableComponent>(entity);
-            renderable.material = material;
-            renderable.model = model;
+            for(int j{-5}; j<4; ++j)
+            {  
+                const auto entity = m_registry.create();
+                auto& pos = m_registry.emplace<TransformComponent>(entity);
+                pos.translation = glm::vec3{j*1.f, i*1.f, 0.f};
+                auto& renderable = m_registry.emplace<RenderableComponent>(entity);
+                renderable.material = material;
+                renderable.model = model;
+            }
         }
 
     }
