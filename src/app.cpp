@@ -102,12 +102,15 @@ void App::loadEntities(){
 
         for(int i{-5}; i<4; ++i)
         {  
-            const auto entity = m_registry.create();
-            auto& pos = m_registry.emplace<TransformComponent>(entity);
-            pos.translation = glm::vec3{0.f, i*1.f, 0.f};
-            auto& renderable = m_registry.emplace<RenderableComponent>(entity);
-            renderable.material = material;
-            renderable.model = model;
+            for(int j{-5}; j<4; ++j)
+            {  
+                const auto entity = m_registry.create();
+                auto& pos = m_registry.emplace<TransformComponent>(entity);
+                pos.translation = glm::vec3{j*1.f, i*1.f, 0.f};
+                auto& renderable = m_registry.emplace<RenderableComponent>(entity);
+                renderable.material = material;
+                renderable.model = model;
+            }
         }
 
     }
