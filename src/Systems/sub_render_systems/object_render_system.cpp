@@ -220,16 +220,6 @@ void ObjectRenderSystem::renderEntities(
         if (renderable.material == nullptr || renderable.model == nullptr)
             continue;
 
-        if (renderable.material->m_descriptor == VK_NULL_HANDLE){
-            // write a descriptor in the pool
-            auto imageInfo = renderable.material->m_textures[0]->getImageInfo();
-            DescriptorWriter(*m_materialSetLayout, *m_objectPool)
-                .writeImage(0, &imageInfo)
-                .build(m_descriptorSets[material_index]);
-            renderable.material->m_descriptor = m_descriptorSets[material_index];
-            material_index++;
-        }
-
         // TODO reduce binds calls by grouping objects by materials
         // bind material descriptor set - at set #1
         vkCmdBindDescriptorSets(
