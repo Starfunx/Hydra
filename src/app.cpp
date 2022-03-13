@@ -94,18 +94,20 @@ void App::loadEntities(){
     // cubes
     {
 
-        static DescriptorLayoutCache cache(m_device);
-        static DescriptorAllocator alloc(m_device);
 
         // create material
         std::shared_ptr<Material> material = std::make_shared<Material>();
-        material->m_textures.push_back(std::make_shared<Texture>(m_device, "../textures/dirt.jpg"));
 
-        auto descriptor_image_info = material->m_textures[0]->getImageInfo();
-        // auto& descriptor = material->m_descriptor;
-        DescriptorBuilder(cache, alloc)
-            .bind_image(0, &descriptor_image_info, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-            .build(material->m_descriptor);
+            // create Texture
+            auto texture = std::make_shared<Texture>(m_device, "../textures/dirt.jpg");
+            material->m_textures.push_back(texture);
+
+            // allocate descriptor
+            auto descriptor_image_info = material->m_textures[0]->getImageInfo();
+            DescriptorBuilder(cache, alloc)
+                .bind_image(0, &descriptor_image_info, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .build(material->m_descriptor);
+
 
 
         // create mesh

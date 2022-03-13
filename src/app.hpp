@@ -5,6 +5,7 @@
 #include "Events/ApplicationEvent.hpp"
 
 #include "Renderer/Renderer.hpp"
+#include "Renderer/DescriptorSet.hpp"
 
 //libs
 #include <entt/entt.hpp>
@@ -48,6 +49,10 @@ private:
 
     Device m_device{m_window};
     Renderer m_renderer{m_window, m_device};
+
+    DescriptorLayoutCache cache{m_device};
+    DescriptorAllocator alloc{m_device};
+
 
     entt::registry m_registry;
 };
