@@ -85,34 +85,27 @@ bool App::OnWindowResize(WindowResizeEvent& e){
 
 void App::loadEntities(){
 
+    { // load textures
+        m_textureManager.loadRessource("../textures/dirt.jpg");
+    }
+    { // load materials
+        m_materialManager.loadRessource("../textures/dirt.jpg");
+    }
+    { // load meshs
+        m_meshManager.loadRessource("../models/cube.obj");
+    }
+
+
     // camera 
     {
        const auto entity = m_registry.create();
        auto& camera = m_registry.emplace<CameraComponent>(entity);
+       camera.position = glm::vec3(1.0f, 1.0f, 3.0f);
+       camera.orientation = glm::quat(glm::vec3{glm::half_pi<float>(), 0.f, 0.0f});
     }
 
     // cubes
     {
-
-
-        // create material
-        std::shared_ptr<Material> material = std::make_shared<Material>();
-
-            // create Texture
-            auto texture = std::make_shared<Texture>(m_device, "../textures/dirt.jpg");
-            material->m_textures.push_back(texture);
-
-            // allocate descriptor
-            auto descriptor_image_info = material->m_textures[0]->getImageInfo();
-            DescriptorBuilder(cache, alloc)
-                .bind_image(0, &descriptor_image_info, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                .build(material->m_descriptor);
-
-
-
-        // create mesh
-        std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/cube.obj");
-
         for(int i{-5}; i<4; ++i)
         {  
             for(int j{-5}; j<4; ++j)
@@ -121,11 +114,10 @@ void App::loadEntities(){
                 auto& pos = m_registry.emplace<TransformComponent>(entity);
                 pos.translation = glm::vec3{j*1.f, i*1.f, 0.f};
                 auto& renderable = m_registry.emplace<RenderableComponent>(entity);
-                renderable.material = material;
-                renderable.model = model;
+                renderable.material = m_materialManager.getRessource("../textures/dirt.jpg");
+                renderable.model = m_meshManager.getRessource("../models/cube.obj");
             }
         }
-
     }
 
 }

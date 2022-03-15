@@ -7,6 +7,10 @@
 #include "Renderer/Renderer.hpp"
 #include "Renderer/DescriptorSet.hpp"
 
+#include "Managers/TextureManager.hpp"
+#include "Managers/MeshManager.hpp"
+#include "Managers/MaterialManager.hpp"
+
 //libs
 #include <entt/entt.hpp>
 
@@ -50,9 +54,12 @@ private:
     Device m_device{m_window};
     Renderer m_renderer{m_window, m_device};
 
-    DescriptorLayoutCache cache{m_device};
-    DescriptorAllocator alloc{m_device};
+    DescriptorLayoutCache m_cache{m_device};
+    DescriptorAllocator m_alloc{m_device};
 
+    TextureManager m_textureManager{m_device};
+    MaterialManager m_materialManager{m_device, m_cache, m_alloc, m_textureManager};
+    MeshManager m_meshManager{m_device};
 
     entt::registry m_registry;
 };
