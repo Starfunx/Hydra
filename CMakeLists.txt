@@ -20,6 +20,9 @@ set(SOURCES
     ${SRC_DIR}/Core/Input.cpp
 
     ${SRC_DIR}/Ressources/Image.cpp
+    ${SRC_DIR}/Managers/TextureManager.cpp
+    ${SRC_DIR}/Managers/MeshManager.cpp
+    ${SRC_DIR}/Managers/MaterialManager.cpp
 
     ${SRC_DIR}/Renderer/Device.cpp
     ${SRC_DIR}/Renderer/Pipeline.cpp
