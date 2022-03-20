@@ -83,6 +83,10 @@ add_subdirectory(${VENDOR_DIR}/glm)
 target_link_libraries(${CMAKE_PROJECT_NAME} glm)
 
 ###########################################################
+# tiny glTf
+include_directories(${VENDOR_DIR}/tinygltf)
+
+###########################################################
 # TinyObj
 include_directories(${VENDOR_DIR}/tinyobj)
 
