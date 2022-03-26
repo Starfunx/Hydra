@@ -3,6 +3,8 @@
 #include "Core/Base.hpp"
 
 //std
+#include <iostream>
+#include <string>
 #include <functional>
 
 	// Events are currently blocking, meaning when an event occurs it

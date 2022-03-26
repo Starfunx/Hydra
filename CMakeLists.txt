@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-w64-mingw32") #force Clang to use its own libraries instead of MSVC's
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-w64-mingw32") #force Clang to use its own libraries instead of MSVC's
+
 project(Hydra VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 20) # c++ standard: c++20
