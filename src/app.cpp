@@ -6,7 +6,7 @@
 #include "Components/Renderable.hpp"
 #include "Components/Camera.hpp"
 
-#include "systems/render_system.hpp"
+#include "Systems/render_system.hpp"
 #include "Systems/viewer_controller.hpp"
 
 //libs
