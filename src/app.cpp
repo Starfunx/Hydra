@@ -95,6 +95,9 @@ void App::loadEntities(){
         m_meshManager.loadRessource("../models/cube.obj");
     }
 
+    {    
+        std::shared_ptr<Model> model = Model::createModelFromGLTFFile(m_device, "../models/cube.obj");
+    }
 
     // camera 
     {
@@ -119,6 +122,9 @@ void App::loadEntities(){
             }
         }
     }
+
+
+
 
 }
 

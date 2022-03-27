@@ -3,6 +3,15 @@
 #include "Utils.hpp"
 
 // libs
+#include "stb_image.h"
+
+#define TINYGLTF_IMPLEMENTATION
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define TINYGLTF_NO_EXTERNAL_IMAGE
+#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE 
+#include "tiny_gltf.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tinyobj.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -40,6 +49,14 @@ std::unique_ptr<Model> Model::createModelFromFile(
     Device& device, const std::string& filepath){
     Builder builder{};
     builder.loadModel(filepath);
+
+    return std::make_unique<Model>(device, builder);
+}
+
+std::unique_ptr<Model> Model::createModelFromGLTFFile(
+    Device& device, const std::string& filepath){
+    Builder builder{};
+    builder.loadGLTFModel(filepath);
 
     return std::make_unique<Model>(device, builder);
 }
@@ -202,6 +219,30 @@ void Model::Builder::loadModel(const std::string &filepath) {
       indices.push_back(uniqueVertices[vertex]);
     }
   }
+}
+
+
+
+void Model::Builder::loadGLTFModel(const std::string &filepath) {
+    tinygltf::Model glTFInput;
+    tinygltf::TinyGLTF gltfContext;
+    std::string error, warning;
+
+    bool fileLoaded = gltfContext.LoadASCIIFromFile(&glTFInput, &error, &warning, filepath);
+
+
+    vertices.clear();
+    indices.clear();
+	if (fileLoaded) {
+            
+        const tinygltf::Scene& scene = glTFInput.scenes[0];
+        for (size_t i = 0; i < scene.nodes.size(); i++) {
+            const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
+            // glTFModel.loadNode(node, glTFInput, nullptr, indexBuffer, vertexBuffer);
+        }
+
+        
+    }
 }
 
 }
