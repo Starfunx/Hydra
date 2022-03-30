@@ -43,7 +43,7 @@ public:
         std::vector<Vertex> vertices{};
         std::vector<uint32_t> indices{};
         
-        void loadModel(const std::string& filepath);
+        void loadOBJModel(const std::string& filepath);
         void loadGLTFModel(const std::string& filepath);
     };
     
@@ -55,7 +55,6 @@ public:
     Model &operator=(const Model&) = delete;
 
     static std::unique_ptr<Model> createModelFromFile(Device& device, const std::string& filepath);
-    static std::unique_ptr<Model> createModelFromGLTFFile(Device& device, const std::string& filepath);
 
     void bind(VkCommandBuffer VkCommandBuffer);
     void draw(VkCommandBuffer VkCommandBuffer);

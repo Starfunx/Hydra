@@ -20,6 +20,7 @@
 // std
 #include <cassert>
 #include <cstring>
+#include <stdexcept>
 
 namespace std {
 template<>
@@ -48,15 +49,15 @@ Model::~Model(){}
 std::unique_ptr<Model> Model::createModelFromFile(
     Device& device, const std::string& filepath){
     Builder builder{};
-    builder.loadModel(filepath);
 
-    return std::make_unique<Model>(device, builder);
-}
+    if(filepath.substr(filepath.find_last_of(".") + 1) == "obj")
+        builder.loadOBJModel(filepath);
 
-std::unique_ptr<Model> Model::createModelFromGLTFFile(
-    Device& device, const std::string& filepath){
-    Builder builder{};
-    builder.loadGLTFModel(filepath);
+    else if(filepath.substr(filepath.find_last_of(".") + 1) == "gltf")
+        builder.loadGLTFModel(filepath);
+
+    else 
+        throw std::runtime_error("unable to open file" + filepath);
 
     return std::make_unique<Model>(device, builder);
 }
@@ -164,7 +165,7 @@ std::vector<VkVertexInputAttributeDescription> Model::Vertex::getAttributesDescr
 }
 
 
-void Model::Builder::loadModel(const std::string &filepath) {
+void Model::Builder::loadOBJModel(const std::string &filepath) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;

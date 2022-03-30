@@ -96,7 +96,7 @@ void App::loadEntities(){
     }
 
     {    
-        std::shared_ptr<Model> model = Model::createModelFromGLTFFile(m_device, "../models/cube.obj");
+        std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/cube.obj");
     }
 
     // camera 
