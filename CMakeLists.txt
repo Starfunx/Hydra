@@ -73,7 +73,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} Vulkan::Vulkan)
 #########################################################
 #GLFW
 
-set(GLFW_PATH "${PROJECT_SOURCE_DIR}/vendor/glfw-3.3.5")
+set(GLFW_PATH "${PROJECT_SOURCE_DIR}/vendor/glfw")
 set(GLFW_INCLUDE_DIRS "${GLFW_PATH}/include")
 set(GLFW_LIB "${GLFW_PATH}/lib-mingw-w64")
 
@@ -92,7 +92,7 @@ include_directories(${VENDOR_DIR}/tinygltf)
 
 ###########################################################
 # TinyObj
-include_directories(${VENDOR_DIR}/tinyobj)
+include_directories(${VENDOR_DIR}/tinyobjloader)
 
 #############################################################
 # Entt

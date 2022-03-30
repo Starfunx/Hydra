@@ -13,7 +13,7 @@
 #include "tiny_gltf.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tinyobj.h"
+#include "tiny_obj_loader.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
