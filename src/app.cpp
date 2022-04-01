@@ -92,9 +92,13 @@ void App::loadEntities(){
         m_materialManager.loadRessource("../textures/dirt.jpg");
     }
     { // load meshs
-        m_meshManager.loadRessource("../models/cube.obj");
+        m_meshManager.loadRessource("../models/cube.gltf");
+        // m_meshManager.loadRessource("../models/cube.obj");
     }
 
+    // {    
+    //     std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "../models/cube.obj");
+    // }
 
     // camera 
     {
@@ -115,10 +119,13 @@ void App::loadEntities(){
                 pos.translation = glm::vec3{j*1.f, i*1.f, 0.f};
                 auto& renderable = m_registry.emplace<RenderableComponent>(entity);
                 renderable.material = m_materialManager.getRessource("../textures/dirt.jpg");
-                renderable.model = m_meshManager.getRessource("../models/cube.obj");
+                renderable.model = m_meshManager.getRessource("../models/cube.gltf");
             }
         }
     }
+
+
+
 
 }
 
