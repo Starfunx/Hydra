@@ -247,16 +247,19 @@ void Model::Builder::loadGLTFModel(const std::string &filepath) {
             if (node.mesh > -1) {
                 const tinygltf::Mesh mesh = glTFInput.meshes[node.mesh];
                 for (size_t i = 0; i < mesh.primitives.size(); i++) {
-                    const tinygltf::Primitive& glTFPrimitive = mesh.primitives[i];
-                    uint32_t firstIndex = static_cast<uint32_t>(indices.size());
-                    uint32_t vertexStart = static_cast<uint32_t>(vertices.size());
-                    uint32_t indexCount = 0;
+                    const tinygltf::Primitive& glTFPrimitive    = mesh.primitives[i];
+                    uint32_t                   firstIndex       = static_cast<uint32_t>(indices.size());
+                    uint32_t                   vertexStart      = static_cast<uint32_t>(vertices.size());
+                    uint32_t                   indexCount       = 0;
+                    bool                       hasSkin          = false;
                     // Vertices
 				    {
-                    const float* positionBuffer = nullptr;
-                    const float* normalsBuffer = nullptr;
-                    const float* texCoordsBuffer = nullptr;
-                    size_t vertexCount = 0;
+                        const float*    positionBuffer     = nullptr;
+                        const float*    normalsBuffer      = nullptr;
+                        const float*    texCoordsBuffer    = nullptr;
+                        const uint16_t* jointIndicesBuffer = nullptr;
+                        const float*    jointWeightsBuffer = nullptr;
+                        size_t          vertexCount        = 0;
 
                         // Get buffer data for vertex normals
                         if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end()) {
@@ -278,14 +281,32 @@ void Model::Builder::loadGLTFModel(const std::string &filepath) {
                             const tinygltf::BufferView& view = glTFInput.bufferViews[accessor.bufferView];
                             texCoordsBuffer = reinterpret_cast<const float*>(&(glTFInput.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                         }
-
-                        					// Append data to model's vertex buffer
+                        // POI: Get buffer data required for vertex skinning
+                        // Get vertex joint indices
+                        if (glTFPrimitive.attributes.find("JOINTS_0") != glTFPrimitive.attributes.end())
+                        {
+                            const tinygltf::Accessor &  accessor = glTFInput.accessors[glTFPrimitive.attributes.find("JOINTS_0")->second];
+                            const tinygltf::BufferView &view     = glTFInput.bufferViews[accessor.bufferView];
+                            jointIndicesBuffer                   = reinterpret_cast<const uint16_t *>(&(glTFInput.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                        }
+                        // Get vertex joint weights
+                        if (glTFPrimitive.attributes.find("WEIGHTS_0") != glTFPrimitive.attributes.end())
+                        {
+                            const tinygltf::Accessor &  accessor = glTFInput.accessors[glTFPrimitive.attributes.find("WEIGHTS_0")->second];
+                            const tinygltf::BufferView &view     = glTFInput.bufferViews[accessor.bufferView];
+                            jointWeightsBuffer                   = reinterpret_cast<const float *>(&(glTFInput.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                        }
+                        
+                        hasSkin = (jointIndicesBuffer && jointWeightsBuffer);
+                        // Append data to model's vertex buffer
                         for (size_t v = 0; v < vertexCount; v++) {
                             Vertex vert{};
                             vert.position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
                             vert.normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
                             vert.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                             vert.color = glm::vec3(1.0f);
+                            vert.jointIndices = hasSkin ? glm::vec4(glm::make_vec4(&jointIndicesBuffer[v * 4])) : glm::vec4(0.0f);
+				        	vert.jointWeights = hasSkin ? glm::make_vec4(&jointWeightsBuffer[v * 4]) : glm::vec4(0.0f);
                             vertices.push_back(vert);
                         }
                     }
@@ -325,6 +346,7 @@ void Model::Builder::loadGLTFModel(const std::string &filepath) {
                             return;
                         }
                     }
+                    
                     // Primitive primitive{};
                     // primitive.firstIndex = firstIndex;
                     // primitive.indexCount = indexCount;
