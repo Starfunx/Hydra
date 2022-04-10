@@ -16,7 +16,7 @@ namespace hyd
 
 struct SkeletonJoint {
     std::string name;
-    i8 parentIndex;
+    i16 parentIndex;
     glm::mat4 invBindPose;
 
 };

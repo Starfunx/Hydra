@@ -261,14 +261,15 @@ void Model::Builder::loadGLTFModel(const std::string &filepath) {
             // Find the root node of the skeleton
             // skins[i].skeletonRoot = nodeFromIndex(glTFSkin.skeleton);
             
-            SkeletonJoint joint{};
-            joint.parentIndex = 0xff;
 
       		for (int jointIndex : glTFSkin.joints)
             {
+                SkeletonJoint joint{};
+                joint.parentIndex = 0xffff;
                 tinygltf::Node node = glTFInput.nodes[jointIndex];
                 nodes.push_back(node);
                 
+                joint.name = node.name;
                 joints.push_back(joint);
             }
 
@@ -290,10 +291,6 @@ void Model::Builder::loadGLTFModel(const std::string &filepath) {
                 }
             }
 
-            skeleton->joints = joints;
-            skeleton->jointCount = joints.size();
-
-
             // Get the inverse bind matrices from the buffer associated to this skin
             if (glTFSkin.inverseBindMatrices > -1)
             {
@@ -309,6 +306,9 @@ void Model::Builder::loadGLTFModel(const std::string &filepath) {
                     joint.invBindPose = inverseBindMatrices[i]; 
                 }
             }
+
+            skeleton->joints = joints;
+            skeleton->jointCount = joints.size();
         }  
         
         
