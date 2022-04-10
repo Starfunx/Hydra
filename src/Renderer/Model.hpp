@@ -13,6 +13,12 @@ and copy the data on the device's GPU so it can be rendered effeciently
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define TINYGLTF_NO_EXTERNAL_IMAGE
+// #define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE 
+#include "tiny_gltf.h"
+
 // std
 #include <memory>
 #include <vector>
@@ -49,6 +55,7 @@ public:
 
         void loadOBJModel(const std::string& filepath);
         void loadGLTFModel(const std::string& filepath);
+        void loadSkin(tinygltf::Model &glTFInput);
     };
     
     

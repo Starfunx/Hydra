@@ -226,6 +226,69 @@ void Model::Builder::loadOBJModel(const std::string &filepath) {
 
 
 
+void Model::Builder::loadSkin(tinygltf::Model &glTFInput){
+    std::vector<tinygltf::Node> nodes;
+    std::vector<SkeletonJoint> joints;
+    joints.clear();
+   
+    if (glTFInput.skins.size() > 0)
+    {
+        tinygltf::Skin glTFSkin = glTFInput.skins[0];        
+        nodes.resize(glTFSkin.joints.size());
+        joints.resize(glTFSkin.joints.size());
+
+
+        for (int i = 0; i<glTFSkin.joints.size(); ++i)
+        {
+            int node_index = glTFSkin.joints[i];
+            tinygltf::Node node = glTFInput.nodes[node_index];
+            nodes[i] = node;
+            
+            joints[i].name = node.name;
+            joints[i].parentIndex = -1;
+        }
+
+        for (int i = 0; i< glTFSkin.joints.size(); ++i)
+        {
+            auto parent_node = nodes[i];
+            int parent_index = i;
+
+            // auto childs = parent_node.children;
+            for (int children_index: parent_node.children){
+                
+                //get the index of the child node;
+                tinygltf::Node child_node = glTFInput.nodes[children_index];
+
+                auto it2 = std::find(nodes.begin(), nodes.end(), child_node); //!= glTFSkin.joints.end()
+                int child_index = it2 - nodes.begin();
+
+                joints[child_index].parentIndex = parent_index;
+            }
+        }
+
+        // Get the inverse bind matrices from the buffer associated to this skin
+        if (glTFSkin.inverseBindMatrices > -1)
+        {
+            std::vector<glm::mat4> inverseBindMatrices;
+            const tinygltf::Accessor &  accessor   = glTFInput.accessors[glTFSkin.inverseBindMatrices];
+            const tinygltf::BufferView &bufferView = glTFInput.bufferViews[accessor.bufferView];
+            const tinygltf::Buffer &    buffer     = glTFInput.buffers[bufferView.buffer];
+            inverseBindMatrices.resize(accessor.count);
+            memcpy(inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
+            
+            for (int i = 0; i<joints.size(); ++i){
+                auto& joint = joints[i];
+                joint.invBindPose = inverseBindMatrices[i]; 
+            }
+        }
+
+        skeleton = std::make_unique<Skeleton>();
+        skeleton->joints = joints;
+        skeleton->jointCount = joints.size();
+    }
+}
+
+
 void Model::Builder::loadGLTFModel(const std::string &filepath) {
     tinygltf::Model glTFInput;
     tinygltf::TinyGLTF gltfContext;
@@ -245,72 +308,8 @@ void Model::Builder::loadGLTFModel(const std::string &filepath) {
         const tinygltf::Scene& scene = glTFInput.scenes[0];
 
 
-        std::vector<tinygltf::Node> nodes;
-        std::vector<SkeletonJoint> joints;
-        joints.clear();
-        // skins.resize(input.skins.size()); // one skin max per gltf file
-        if (glTFInput.skins.size() > 0)
-        // for (size_t i = 0; i < glTFInput.skins.size(); i++)
-        {
-
-            skeleton = std::make_unique<Skeleton>();
-
-            tinygltf::Skin glTFSkin = glTFInput.skins[0];
-
-            // skins[i].name = glTFSkin.name;
-            // Find the root node of the skeleton
-            // skins[i].skeletonRoot = nodeFromIndex(glTFSkin.skeleton);
-            
-
-      		for (int jointIndex : glTFSkin.joints)
-            {
-                SkeletonJoint joint{};
-                joint.parentIndex = 0xffff;
-                tinygltf::Node node = glTFInput.nodes[jointIndex];
-                nodes.push_back(node);
-                
-                joint.name = node.name;
-                joints.push_back(joint);
-            }
-
-      		// for (tinygltf::Node node : glTFInput.nodes)
-            for (int jointIndex : glTFSkin.joints)
-            {
-                auto node = glTFInput.nodes[jointIndex];
-                int parent_index = jointIndex;
-
-                auto childs = node.children;
-                for (int children_index: childs){
-                    
-                    // find the index of parent node index in gltfSkin.joints
-                    auto it = std::find(glTFSkin.joints.begin(), glTFSkin.joints.end(), children_index); //!= glTFSkin.joints.end()
-                    int child_index = it - glTFSkin.joints.begin();
-                    
-                    // 
-                    joints[child_index].parentIndex = parent_index;
-                }
-            }
-
-            // Get the inverse bind matrices from the buffer associated to this skin
-            if (glTFSkin.inverseBindMatrices > -1)
-            {
-                std::vector<glm::mat4> inverseBindMatrices;
-                const tinygltf::Accessor &  accessor   = glTFInput.accessors[glTFSkin.inverseBindMatrices];
-                const tinygltf::BufferView &bufferView = glTFInput.bufferViews[accessor.bufferView];
-                const tinygltf::Buffer &    buffer     = glTFInput.buffers[bufferView.buffer];
-                inverseBindMatrices.resize(accessor.count);
-                memcpy(inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
-                
-                for (int i; i<joints.size(); ++i){
-                    auto& joint = joints[i];
-                    joint.invBindPose = inverseBindMatrices[i]; 
-                }
-            }
-
-            skeleton->joints = joints;
-            skeleton->jointCount = joints.size();
-        }  
-        
+     
+        loadSkin(glTFInput);
         
         // load nodes   
         for (size_t i = 0; i < scene.nodes.size(); i++) {
