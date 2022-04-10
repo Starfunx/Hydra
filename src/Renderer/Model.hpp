@@ -6,6 +6,7 @@ and copy the data on the device's GPU so it can be rendered effeciently
 
 #include "Device.hpp"
 #include "Buffer.hpp"
+#include "Animation.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -44,7 +45,8 @@ public:
     {
         std::vector<Vertex> vertices{};
         std::vector<uint32_t> indices{};
-        
+        std::unique_ptr<Skeleton> skeleton{nullptr};
+
         void loadOBJModel(const std::string& filepath);
         void loadGLTFModel(const std::string& filepath);
     };
@@ -75,6 +77,8 @@ private:
     bool m_hasIndexBuffer = false;
     std::unique_ptr<Buffer> m_indexBuffer;
     uint32_t m_indexCount;
+
+    Skeleton* skeleton{nullptr};
 };
 
 }

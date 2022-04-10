@@ -94,6 +94,7 @@ void App::loadEntities(){
     { // load meshs
         m_meshManager.loadRessource("../models/cube.gltf");
         m_meshManager.loadRessource("../models/cube.obj");
+        m_meshManager.loadRessource("../models/Dragon_wp5.gltf");
     }
 
     // {    
@@ -123,12 +124,22 @@ void App::loadEntities(){
             }
         }
 
-        const auto entity = m_registry.create();
-        auto& pos = m_registry.emplace<TransformComponent>(entity);
-        pos.translation = glm::vec3{1.f, 1.f, 2.f};
-        auto& renderable = m_registry.emplace<RenderableComponent>(entity);
-        renderable.material = m_materialManager.getRessource("../textures/dirt.jpg");
-        renderable.model = m_meshManager.getRessource("../models/cube.obj");
+        {
+            const auto entity = m_registry.create();
+            auto& pos = m_registry.emplace<TransformComponent>(entity);
+            pos.translation = glm::vec3{-1.f, -1.f, 2.f};
+            auto& renderable = m_registry.emplace<RenderableComponent>(entity);
+            renderable.material = m_materialManager.getRessource("../textures/dirt.jpg");
+            renderable.model = m_meshManager.getRessource("../models/cube.obj");
+        }
+        {
+            const auto entity = m_registry.create();
+            auto& pos = m_registry.emplace<TransformComponent>(entity);
+            pos.translation = glm::vec3{1.f, 1.f, 1.f};
+            auto& renderable = m_registry.emplace<RenderableComponent>(entity);
+            renderable.material = m_materialManager.getRessource("../textures/dirt.jpg");
+            renderable.model = m_meshManager.getRessource("../models/Dragon_wp5.gltf");
+        }
     }
 
 
